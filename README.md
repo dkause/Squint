@@ -13,11 +13,12 @@ Nowadays, selecting a photo is done per app or a website, a pwa.
 ## Exploration
 
 I have used many different apps during the years, but I was never really satisfied. Most had the features I needed, but some other flaws:
-• they required logins, which is overkill or companies won't share the credentials
-• they had public websites, which the customer might not like
-• they had no way to limit the selection of photos
-• they had to many features, which needed to be configured or explained
-• you could not limit the number of photos to be selected for processing  
+
+- they required logins, which is overkill or companies won't share the credentials
+- they had public websites, which the customer might not like
+- they had no way to limit the selection of photos
+- they had to many features, which needed to be configured or explained
+- you could not limit the number of photos to be selected for processing  
 
 To get a better scope on the problem and to discover what others do, I conducted a Competitive and a Swot analysis of two main competitors. After this thorough analysis, which you can read here, I started my own project with a business requirement document, which was helpful to understand the scope and value proposition of my app.
 
@@ -26,9 +27,10 @@ My photo company is named SILBERBLICK, which is Squint in german.
 ![Logo](./src/img/Squint-Logo.jpg)
 
 **SQUINT** is a progressive web app, which helps the user to navigate through amounts of similar looking images and find the best one. It uses a lean interface and smart techniques
-• is like Tinder for portrait sessions
-• swipe to select your portraits photos
-• and match with photographers' choice
+
+- is like Tinder for portrait sessions
+- swipe to select your portraits photos
+- and match with photographers' choice
 
 ### Problem Statement
 
@@ -56,9 +58,10 @@ In this exploration of the user, I learned that is important to create trust, as
 ## Wireframes and Prototypes
 
 All ideas start from scratch, scratching the head. In our exploration of the user and our competitive analysis we learned what features a first draft should include:
-• Viewing different selections and photos
-• Rate a photo
-• Share a photo
+
+- Viewing different selections and photos
+- Rate a photo
+- Share a photo
 I created a low fidelity prototype with is close to apps, like lightroom mobile, packed with features.
 
 ## Low Fidelity Prototype
@@ -136,10 +139,11 @@ For a better experience, check the interactive prototype and learn how I deliver
 > emeded figma
 
 I use Figma for Design Delivery, as it provides all I need:
-• Assets
-• Design System
-• Collaboration
-• basic prototyping
-• inspector for developer hand off
+
+- Assets
+- Design System
+- Collaboration
+- basic prototyping
+- inspector for developer hand off
 First, I used Zeplin and linked it figma. But I prefer to use less tools and for my project figma has all features I need.
 Prototyping could be easier though.
