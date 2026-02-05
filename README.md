@@ -7,6 +7,8 @@ SQUINT ist eine Progressive Web App (PWA), die Nutzern hilft, aus einer großen 
 ### Hintergrund
 In den 1990er-Jahren erfolgte die Bildauswahl über physische Kontaktabzüge oder Dias. Heute wird dies meist über Apps oder Websites erledigt. SQUINT kombiniert die Einfachheit traditioneller Methoden mit modernen, digitalen Lösungen – inspiriert von der Swipe-Mechanik bekannter Apps wie Tinder.
 
+![Contact Sheet](./src/img/contact-sheet.png)
+
 ### Problemstellung
 Aktuell verfügbare Tools weisen folgende Nachteile auf:
 - Erfordern Logins, was für Kunden und Unternehmen oft unpraktikabel ist.
@@ -27,8 +29,13 @@ SQUINT adressiert diese Probleme durch:
 Um die Bedürfnisse der Nutzer zu verstehen, wurden drei Personas erstellt, die das Spektrum der potenziellen Anwender abdecken:
 
 1. **Jochen** – Professioneller Fotograf, der eine effiziente Lösung für die Kundenkommunikation sucht.
+   ![Persona Jochen](./src/img/Persona-Jochen.png)
+
 2. **Peter Miller** – Unternehmensvertreter, der Bilder für Marketingzwecke auswählt.
+   ![Persona Peter Miller](./src/img/Persona-Peter_Miller.png)
+
 3. **Sandra Oxtail** – Privatperson, die Porträts für persönliche Zwecke auswählt.
+   ![Persona Sandra Oxtail](./src/img/Persona-Sandra_Oxtail.png)
 
 ### User Journey
 Die User Journey zeigt, wie Nutzer durch die App navigieren und welche Emotionen dabei auftreten. Ziel ist es, eine klare und intuitive Benutzerführung zu gewährleisten, die Vertrauen schafft – insbesondere bei der Auswahl von Porträts, die langfristig und sichtbar genutzt werden.
@@ -41,14 +48,20 @@ Der erste Entwurf orientierte sich an Apps wie Lightroom Mobile und umfasste:
 - Bewertungsfunktion für Fotos.
 - Teilen von Fotos.
 
+![Low-Fidelity-Prototyp](./src/img/LowFi-Prototype.png)
+
 ### Mid-Fidelity-Prototyp
 Der nächste Schritt war die Verfeinerung der Benutzeroberfläche und die Integration von Feedback aus ersten Nutzerinterviews.
+
+![Mid-Fidelity-Prototyp](./src/img/MidFi-Prototype.png)
 
 ### High-Fidelity-Prototyp
 Im finalen Entwurf wurden folgende Elemente hinzugefügt:
 - **Farbcodierung** zur Kennzeichnung der Fotografenauswahl.
 - **Sternebewertung** für Favoriten.
 - **Horizontale Split-View** zum Vergleich von Bildern.
+
+![High-Fidelity-Prototyp](./src/img/HiFi-Prototype.png)
 
 ## Usability-Tests
 
@@ -57,10 +70,14 @@ Im finalen Entwurf wurden folgende Elemente hinzugefügt:
 - Der Bewertungsstern wurde fälschlicherweise als Auswahlbutton interpretiert.
 - Die Nutzerführung war unklar und führte zu einer **Nudelsuppe** an Klicks.
 
+![Heat-Map-Star](./src/img/Heat-Map-Star.png)
+
 ### Anpassungen
 - **Entfernung des Bewertungssterns** und Fokus auf Swipe-Gesten.
 - **Reduktion auf vier Kernscreens** für eine klarere Nutzerführung.
 - **Onboarding-Anleitung** für das Teilen von Screenshots anstelle eines Logins.
+
+![HeatMap-UserFlow](./src/img/HeatMap-UserFlow.png)
 
 ## Design Foundation
 
@@ -68,6 +85,11 @@ Im finalen Entwurf wurden folgende Elemente hinzugefügt:
 - **Farben:** Schwarz, Weiß und Grautöne, um die Farbwiedergabe der Fotos nicht zu beeinträchtigen.
 - **Typography:** IBM Plex für klare Lesbarkeit und Ästhetik.
 - **Grid-System:** Konsistente Ausrichtung und Struktur.
+
+![Design System Colors](./src/img/Squint-Design-System_Color.png)
+![Design System Grid](./src/img/Squint-Design-System_Grid.png)
+![Design System UI Elements](./src/img/Squint-Design-System_UI_Elements.png)
+![Design System Typography](./src/img/Squint-Design-System_Typography.png)
 
 ## Ergebnis
 
