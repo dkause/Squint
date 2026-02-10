@@ -128,9 +128,10 @@ I have chosen colors, like black, white, or grey which don't spoil the photos co
 As the Design and apps features are still evolving, you get here a look at the app with the design applied:
 
 ![Alt text](./src/img/Squint-Screen-Welcome.png)
+![Alt text](./src/img/Squint-Screen-Choice.png)
 ![Alt text](./src/img/Squint-Screen-Hit.png)
 ![Alt text](./src/img/Squint-Screen-Finish.png)
-![Alt text](./src/img/Squint-Screen-Choice.png)
+
 Click on the first picture to open a lightbox, there you cycle through with the arrows on your keyboard.
 For a better experience, check the interactive prototype and learn how I deliver my design and findings.
 
