@@ -2,26 +2,30 @@
 
 ## Initial Goals
 
-For this UX Course, I had to choose from three apps as a learning project. I took an expert app, as it fitted best to my needs. To connect photographer with customer for selection of photos.
+**SQUINT** is an expert app, it connects photographer and user for the selection of photos in a mobile-first, fast and un-obstructive manner.
+### Problem
 
-The app I had in mind should help the user to find the best out of similar looking photos. Which is a tedious task to do. Especially in a business context, where companies and other stakeholder's need must be met. This should be intuitive, easy to do and mobile.
-
-When I started photography as a professional in the nineties, we had printed contact sheets or developed slides.
-Nowadays, selecting a photo is done per app or a website, a pwa.
-![contact sheet](./src/img/contact-sheet.png)
+To the best out of similar looking photos, is a tedious task to do. Especially in a business context:
+- the selection should be private
+- Companies need security: no credentenials should be shared, no extra registration or login
+- the selected photo must fit CI and needs approval by stakeholders
+- the selection must be limited to a certain number of photos
+- the app should be intuitive, feature-less and mobile
 
 ## Exploration
+When I started photography as a professional in the nineties, we had printed contact sheets or slides on a lighttable fpr selection.
+![contact sheet](./src/img/contact-sheet.png)
+Nowadays, selecting a photo is done per app or website.
 
-I have used many different apps during the years, but I was never really satisfied. Most had the features I needed, but some other flaws:
+I used different apps, which had the core features, but they additionaly:
 
-- they required logins, which is overkill or companies won't share the credentials
-- they had public websites, which the customer might not like
-- they had no way to limit the selection of photos
-- they had to many features, which needed to be configured or explained
-- you could not limit the number of photos to be selected for processing  
-
+- required logins
+- used public websites
+- had no way to limit the selection of photos
+- needed on-boarding
+## Competive Analysis
 To get a better scope on the problem and to discover what others do, I conducted a Competitive and a Swot analysis of two main competitors. After this thorough analysis, which you can read here, I started my own project with a business requirement document, which was helpful to understand the scope and value proposition of my app.
-
+### Solution
 So, I had an idea and a scope and a project name: "SQUINT".
 My photo company is named SILBERBLICK, which is Squint in german.
 ![Logo](./src/img/Squint-Logo.jpg)
