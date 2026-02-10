@@ -145,5 +145,6 @@ I use Figma for Design Delivery, as it provides all I need:
 - Collaboration
 - basic prototyping
 - inspector for developer hand off
+  
 First, I used Zeplin and linked it figma. But I prefer to use less tools and for my project figma has all features I need.
 Prototyping could be easier though.
