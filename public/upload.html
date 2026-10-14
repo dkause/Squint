@@ -84,7 +84,7 @@
     const retryBtn = document.getElementById('retryBtn');
     
     // Favoriten-Array
-    let favorites: string[] = [];
+    let favorites = [];
     
     // Dateiliste aktualisieren
     function updateFileList() {
@@ -142,7 +142,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const password = (document.getElementById('password') as HTMLInputElement).value;
+      const password = document.getElementById('password').value;
       const files = fileInput.files;
       
       if (files.length === 0) {
@@ -174,18 +174,18 @@
         
         const result = await response.json();
         
-        if (result.ok) {
+        if (result.token) {
           showResult(result.token);
         } else {
           showError(result.error || 'Unbekannter Fehler');
         }
       } catch (err) {
-        showError('Netzwerkfehler: ' + (err as Error).message);
+        showError('Netzwerkfehler: ' + err.message);
       }
     });
     
     // Ergebnis anzeigen
-    function showResult(token: string) {
+    function showResult(token) {
       form.classList.add('hidden');
       errorDiv.classList.add('hidden');
       resultDiv.classList.remove('hidden');
@@ -196,7 +196,7 @@
     }
     
     // Fehler anzeigen
-    function showError(message: string) {
+    function showError(message) {
       form.classList.add('hidden');
       resultDiv.classList.add('hidden');
       errorDiv.classList.remove('hidden');

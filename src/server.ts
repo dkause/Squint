@@ -18,6 +18,7 @@ const PUBLIC_ASSETS = new Map<string, string>([
   ['/swipe.js', 'text/javascript; charset=utf-8'],
   ['/swipe.css', 'text/css; charset=utf-8'],
   ['/match.css', 'text/css; charset=utf-8'],
+  ['/upload.css', 'text/css; charset=utf-8'],
   ['/manifest.webmanifest', 'application/manifest+json'],
   ['/squint-icon.jpg', 'image/jpeg'],
 ]);
