@@ -36,8 +36,8 @@ no sharing/download. The authoritative list is in `SPEC.md`.
 - `npm run dev` — dev server (`tsx watch`), port from `PORT` env, default 8080.
 - `npm start` — production launch command (also used on Infomaniak).
 - Gates (must be green before merging to `dev`): `npm run typecheck`,
-  `npm run lint`, `npm test`.
-- `npm run deploy` — placeholder until T9 (Infomaniak Node.js hosting).
+  `npm run lint`, `npm test`. E2E: `npm run test:e2e` (Playwright, handy viewport).
+- `npm run deploy` — pushes `dev`; server-side steps and env vars: see `DEPLOY.md`.
 
 ## Deployment target: Infomaniak
 

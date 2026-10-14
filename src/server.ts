@@ -14,7 +14,13 @@ const port = Number(process.env.PORT ?? 8080);
 const FILENAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
 
 // Static client assets served from public/
-const PUBLIC_ASSETS = new Set(['/swipe.js', '/swipe.css', '/match.css']);
+const PUBLIC_ASSETS = new Map<string, string>([
+  ['/swipe.js', 'text/javascript; charset=utf-8'],
+  ['/swipe.css', 'text/css; charset=utf-8'],
+  ['/match.css', 'text/css; charset=utf-8'],
+  ['/manifest.webmanifest', 'application/manifest+json'],
+  ['/squint-icon.jpg', 'image/jpeg'],
+]);
 
 // Get directory of this file
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -77,14 +83,12 @@ const server = createServer(async (req, res) => {
     }
 
     // Route: static client assets
-    if (PUBLIC_ASSETS.has(pathname)) {
+    const assetType = PUBLIC_ASSETS.get(pathname);
+    if (assetType !== undefined) {
       try {
         const assetPath = resolve(__dirname, '..', 'public', pathname.slice(1));
         const asset = await readFile(assetPath);
-        const contentType = pathname.endsWith('.js')
-          ? 'text/javascript; charset=utf-8'
-          : 'text/css; charset=utf-8';
-        res.writeHead(200, { 'content-type': contentType });
+        res.writeHead(200, { 'content-type': assetType });
         res.end(asset);
       } catch {
         res.writeHead(404);
