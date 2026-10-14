@@ -2,10 +2,65 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <title>Squint</title>
+  <link rel="stylesheet" href="/swipe.css">
 </head>
 <body>
-  <p>Squint – Platzhalter bis T4.</p>
+  <main id="app">
+    <!-- Willkommens-Overlay -->
+    <div id="welcome-overlay" class="overlay" aria-hidden="true">
+      <div class="overlay-content">
+        <p>Wische nach rechts, um zu behalten, nach links zum Wegwerfen.</p>
+        <button id="close-welcome" class="btn" aria-label="Willkommen schließen">OK</button>
+      </div>
+    </div>
+
+    <!-- Gesperrt-Hinweis -->
+    <div id="locked-overlay" class="overlay" aria-hidden="true">
+      <div class="overlay-content">
+        <p>Auswahl wurde gesendet.</p>
+      </div>
+    </div>
+
+    <!-- Ende-Hinweis -->
+    <div id="complete-overlay" class="overlay" aria-hidden="true">
+      <div class="overlay-content">
+        <p>Auswahl abgeschlossen.</p>
+      </div>
+    </div>
+
+    <!-- Blockiert-Hinweis -->
+    <div id="blocked-toast" class="toast" aria-live="polite" aria-hidden="true">
+      <p>Nicht möglich: Zielanzahl erreicht.</p>
+    </div>
+
+    <!-- Header mit Counter -->
+    <header class="header">
+      <button id="undo-btn" class="btn-icon" aria-label="Zurück" disabled>
+        <span class="icon">↩</span>
+      </button>
+      <span id="counter" class="counter" aria-live="polite">0 übrig, Ziel 0</span>
+      <div class="spacer"></div>
+    </header>
+
+    <!-- Karte -->
+    <div id="card-container" class="card-container">
+      <div id="card" class="card">
+        <img id="card-image" class="card-image" alt="Auszuwählendes Bild" draggable="false">
+        <div id="match-indicator" class="match-indicator" aria-hidden="true">
+          <span class="match-star">★</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aktions-Buttons -->
+    <footer class="footer">
+      <button id="dislike-btn" class="btn-action" aria-label="Wegwerfen">✗</button>
+      <button id="like-btn" class="btn-action" aria-label="Behalten">✓</button>
+    </footer>
+  </main>
+
+  <script type="module" src="/swipe.js"></script>
 </body>
 </html>
