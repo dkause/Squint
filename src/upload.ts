@@ -48,6 +48,11 @@ async function processImage(buffer: Buffer): Promise<Buffer> {
   return processedBuffer;
 }
 
+export function isUploadPasswordValid(password: string): boolean {
+  const uploadPassword = process.env.SQUINT_UPLOAD_PASSWORD;
+  return uploadPassword !== undefined && password === uploadPassword;
+}
+
 export async function handleUpload(req: IncomingMessage): Promise<UploadResult> {
   try {
     // 1. Passwort prüfen

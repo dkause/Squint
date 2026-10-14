@@ -2,9 +2,9 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readSet, deleteExpired } from './storage.js';
+import { readSet, deleteExpired, updateFavorites } from './storage.js';
 import { SetNotFoundError, InvalidTokenError, dataDir as storageDataDir } from './storage.js';
-import { handleUpload } from './upload.js';
+import { handleUpload, isUploadPasswordValid } from './upload.js';
 import { finishSelection, loadMailConfig } from './finish.js';
 import { loadCleanupConfig, startCleanupScheduler } from './cleanup.js';
 
@@ -184,6 +184,41 @@ const server = createServer(async (req, res) => {
       const status = result.ok ? 200 : 400;
       res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify(result.ok ? { ok: true } : { error: result.error }));
+      return;
+    }
+
+    // Route: POST /:token/favorites - photographer marks favorites after upload (step 4)
+    if (pathSegments.length === 2 && pathSegments[1] === 'favorites' && req.method === 'POST') {
+      let parsed: { password?: unknown; favorites?: unknown };
+      try {
+        parsed = JSON.parse(await readBody(req));
+      } catch {
+        res.writeHead(400, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'ungueltiger Request-Body' }));
+        return;
+      }
+      if (typeof parsed.password !== 'string' || !isUploadPasswordValid(parsed.password)) {
+        res.writeHead(401, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'falsches Passwort' }));
+        return;
+      }
+      if (!Array.isArray(parsed.favorites) || !parsed.favorites.every(f => typeof f === 'string')) {
+        res.writeHead(400, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'favorites fehlen' }));
+        return;
+      }
+      try {
+        await updateFavorites(token, parsed.favorites);
+        res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (error) {
+        const message = error instanceof SetNotFoundError || error instanceof InvalidTokenError
+          ? 'Set nicht gefunden'
+          : (error as Error).message;
+        const status = error instanceof SetNotFoundError || error instanceof InvalidTokenError ? 404 : 400;
+        res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: message }));
+      }
       return;
     }
 

@@ -123,6 +123,22 @@ export async function recordSelection(token: string, filenames: string[]): Promi
   await writeSetData(token, data);
 }
 
+// Favoriten nach dem Upload aktualisieren (Schritt 4 des Fotografen-Workflows)
+export async function updateFavorites(token: string, favorites: string[]): Promise<void> {
+  const data = await readSetData(token);
+  const known = new Set(data.images.map((img) => img.originalname));
+  for (const fav of favorites) {
+    if (!known.has(fav)) {
+      throw new Error(`Bild "${fav}" ist nicht Teil des Sets`);
+    }
+  }
+  data.images = data.images.map((img) => ({
+    ...img,
+    favorite: favorites.includes(img.originalname),
+  }));
+  await writeSetData(token, data);
+}
+
 // Abgelaufene Sets löschen
 export async function deleteExpired(olderThanMs: number, now: number): Promise<string[]> {
   const deletedTokens: string[] = [];
