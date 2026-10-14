@@ -7,3 +7,5 @@ dist/
 # Build-Artefakte
 public/swipe.js
 public/finish.js
+test-results/
+playwright-report/
