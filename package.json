@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "build:client": "esbuild public/swipe.ts --bundle --outfile=public/swipe.js --format=esm --target=es2022 && esbuild public/finish.ts --bundle --outfile=public/finish.js --format=esm --target=es2022",
+    "build:client": "esbuild public/swipe.ts --bundle --outfile=public/swipe.js --format=esm --target=es2022",
     "dev": "npm run build:client -- --watch=forever & tsx watch src/server.ts",
     "start": "npm run build:client && tsx src/server.ts",
     "deploy": "echo 'Deploy folgt in T9 (Infomaniak Node.js-Hosting, Konfiguration ueber Umgebungsvariablen)'"

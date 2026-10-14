@@ -2,9 +2,11 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readSet } from './storage.js';
+import { readSet, deleteExpired } from './storage.js';
 import { SetNotFoundError, InvalidTokenError, dataDir as storageDataDir } from './storage.js';
 import { handleUpload } from './upload.js';
+import { finishSelection, loadMailConfig } from './finish.js';
+import { loadCleanupConfig, startCleanupScheduler } from './cleanup.js';
 
 const port = Number(process.env.PORT ?? 8080);
 
@@ -12,13 +14,21 @@ const port = Number(process.env.PORT ?? 8080);
 const FILENAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
 
 // Static client assets served from public/
-const PUBLIC_ASSETS = new Set(['/swipe.js', '/swipe.css']);
+const PUBLIC_ASSETS = new Set(['/swipe.js', '/swipe.css', '/match.css']);
 
 // Get directory of this file
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Ensure dataDir is a string
 const dataDir = storageDataDir as string;
+
+async function readBody(req: import('node:http').IncomingMessage): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(chunk as Buffer);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
 
 const server = createServer(async (req, res) => {
   try {
@@ -141,6 +151,37 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // Route: POST /:token/finish - confirm selection, send mail, lock set
+    if (pathSegments.length === 2 && pathSegments[1] === 'finish' && req.method === 'POST') {
+      const body = await readBody(req);
+      let filenames: unknown;
+      try {
+        filenames = JSON.parse(body).filenames;
+      } catch {
+        res.writeHead(400, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'ungueltiger Request-Body' }));
+        return;
+      }
+      if (!Array.isArray(filenames) || !filenames.every(f => typeof f === 'string')) {
+        res.writeHead(400, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'filenames fehlen' }));
+        return;
+      }
+      let mailConfig;
+      try {
+        mailConfig = loadMailConfig();
+      } catch (error) {
+        res.writeHead(500, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: `Mail nicht konfiguriert: ${(error as Error).message}` }));
+        return;
+      }
+      const result = await finishSelection(token, filenames, mailConfig);
+      const status = result.ok ? 200 : 400;
+      res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify(result.ok ? { ok: true } : { error: result.error }));
+      return;
+    }
+
     // Route: GET /:token/images/:filename - serve image file
     if (pathSegments.length === 3 && pathSegments[1] === 'images') {
       const filename = pathSegments[2] as string;
@@ -182,4 +223,14 @@ const server = createServer(async (req, res) => {
 
 server.listen(port, () => {
   console.log(`Squint laeuft auf Port ${port}`);
+  const cleanupConfig = loadCleanupConfig();
+  if (cleanupConfig) {
+    startCleanupScheduler(cleanupConfig, {
+      deleteExpired,
+      now: () => Date.now(),
+      setInterval: (fn: () => void, ms: number) => setInterval(fn, ms),
+      clearInterval: (id: object) => clearInterval(id as NodeJS.Timeout),
+    });
+    console.log(`Cleanup aktiv: Frist ${cleanupConfig.retentionMs}ms, Intervall ${cleanupConfig.intervalMs}ms`);
+  }
 });
