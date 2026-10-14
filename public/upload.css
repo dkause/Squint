@@ -391,11 +391,3 @@ h1 {
 .preview-item:has(input:checked) .preview-star::before {
   content: "★";
 }
-
-.save-btn {
-  margin-top: var(--spacing-sm, 0.5rem);
-}
-
-.save-btn.dirty {
-  outline: 2px solid #f5c518;
-}

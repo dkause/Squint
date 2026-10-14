@@ -50,15 +50,15 @@
               required
             >
           </div>
-          <button type="submit" id="uploadBtn" class="submit-btn" disabled>3.1 Hochladen</button>
+          <button type="submit" id="uploadBtn" class="submit-btn" disabled>Hochladen</button>
         </li>
 
         <li class="step">
-          <span class="step-label">4. Auswahl (Favoriten, optional):</span>
+          <span class="step-label">4. Auswahl (Favoriten):</span>
           <div id="fileList" class="file-list">
             <p class="file-list-hint">Noch keine Bilder ausgewählt.</p>
           </div>
-          <button type="button" id="saveSelectionBtn" class="save-btn" hidden>Auswahl speichern</button>
+          <button type="button" id="saveSelectionBtn" class="submit-btn" disabled hidden>0 von N</button>
         </li>
       </ol>
     </form>
@@ -100,6 +100,7 @@
 
     // 4. Auswahl: Preview-Grid der gewählten Bilder, Haken = Favorit
     fileInput.addEventListener('change', updateFileList);
+    nInput.addEventListener('input', updateSelectionState);
 
     function updateFileList() {
       const files = fileInput.files;
@@ -140,7 +141,7 @@
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.dataset.filename = file.name;
-        checkbox.addEventListener('change', markSelectionDirty);
+        checkbox.addEventListener('change', updateSelectionState);
 
         const img = document.createElement('img');
         img.src = url;
@@ -158,11 +159,12 @@
       }
 
       saveSelectionBtn.hidden = false;
-      markSelectionDirty();
+      updateSelectionState();
 
       // N vorbelegen, falls leer (Hälfte der Bilder)
       if (nInput.value === '') {
         nInput.value = Math.max(1, Math.floor(files.length / 2));
+        updateSelectionState();
       }
 
       uploadBtn.disabled = false;
@@ -173,24 +175,33 @@
         .map(cb => cb.dataset.filename);
     }
 
-    function markSelectionDirty() {
+    // Zwei Button-States: inaktiv (grau) bis genau N Favoriten, dann aktiv (schwarz)
+    function updateSelectionState() {
+      if (saveSelectionBtn.hidden) {
+        return;
+      }
+
+      const n = parseInt(nInput.value);
+
+      if (isNaN(n) || n < 1) {
+        saveSelectionBtn.disabled = true;
+        saveSelectionBtn.textContent = checkedFilenames().length + ' von N — N festlegen';
+        return;
+      }
+
       const count = checkedFilenames().length;
-      saveSelectionBtn.textContent = count > 0
-        ? 'Auswahl speichern (' + count + ')'
-        : 'Auswahl speichern';
-      saveSelectionBtn.classList.add('dirty');
+      saveSelectionBtn.textContent = count + ' von ' + n;
+      saveSelectionBtn.disabled = count !== n;
     }
 
-    // 4.1 Auswahl speichern (Zustand committen, mit dem Upload wird sie übertragen)
+    // 4.1 Auswahl speichern: Bestätigung im gleichen Button-Design
     saveSelectionBtn.addEventListener('click', () => {
       favorites = checkedFilenames();
-      saveSelectionBtn.classList.remove('dirty');
-      saveSelectionBtn.textContent = favorites.length > 0
-        ? favorites.length + ' Favoriten gespeichert'
-        : 'Keine Favoriten gespeichert';
+      saveSelectionBtn.disabled = false;
+      saveSelectionBtn.textContent = 'Favoriten gespeichert';
     });
 
-    // 3.1 Hochladen: ein Vorgang — Passwort, N, Bilder, Favoriten, ein Submit
+    // Hochladen: ein Vorgang — Passwort, N, Bilder, Favoriten, ein Submit
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -242,7 +253,7 @@
         showError('Netzwerkfehler: ' + err.message);
       } finally {
         uploadBtn.disabled = false;
-        uploadBtn.textContent = '3.1 Hochladen';
+        uploadBtn.textContent = 'Hochladen';
       }
     });
 

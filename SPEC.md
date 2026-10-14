@@ -14,7 +14,7 @@ Kein Login oder Konto für Kunden, keine Galerie oder Übersicht, kein Chat, kei
 
 ## Ablauf Fotograf
 1. Passwortseite, danach Upload-Formular.
-2. Bilder wählen (mehrere), Favoriten markieren (beliebig viele), N setzen (1 ≤ N < Anzahl Bilder).
+2. Bilder wählen (mehrere), Favoriten markieren (genau N, geändert 2026-10-14: vorher beliebig viele), N setzen (1 ≤ N < Anzahl Bilder).
 3. Server verkleinert jedes Bild (Webformat, lange Kante 1600 px, JPEG) und behält den Originaldateinamen.
 4. Ergebnis ist ein geheimer Link. Den verschickt der Fotograf selbst.
 
