@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Squint – Upload</title>
+  <link rel="stylesheet" href="upload.css">
+</head>
+<body>
+  <main class="upload-container">
+    <h1>Squint – Bilder hochladen</h1>
+    
+    <form id="uploadForm" class="upload-form">
+      <div class="form-group">
+        <label for="password">Passwort:</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          required
+          autocomplete="off"
+        >
+      </div>
+      
+      <div class="form-group">
+        <label for="images">Bilder auswählen (mehrere):</label>
+        <input 
+          type="file" 
+          id="images" 
+          name="images" 
+          accept="image/*" 
+          multiple
+          required
+        >
+      </div>
+      
+      <div id="fileList" class="file-list">
+        <p class="file-list-hint">Keine Dateien ausgewählt</p>
+      </div>
+      
+      <div class="form-group">
+        <label for="n">Anzahl Bilder für Kundenauswahl (N):</label>
+        <input 
+          type="number" 
+          id="n" 
+          name="n" 
+          min="1"
+          required
+        >
+      </div>
+      
+      <button type="submit" class="submit-btn">Hochladen</button>
+    </form>
+    
+    <div id="result" class="result hidden">
+      <h2>Upload erfolgreich!</h2>
+      <p>Geheimer Link für den Kunden:</p>
+      <div class="token-link-container">
+        <a id="tokenLink" href="" class="token-link"></a>
+        <button id="copyBtn" class="copy-btn">Kopieren</button>
+      </div>
+      <p class="warning">⚠️ Link nur an den Kunden schicken!</p>
+    </div>
+    
+    <div id="error" class="error hidden">
+      <h2>Fehler</h2>
+      <p id="errorMessage"></p>
+      <button id="retryBtn" class="retry-btn">Erneut versuchen</button>
+    </div>
+  </main>
+  
+  <script>
+    // DOM-Elemente
+    const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('images');
+    const fileList = document.getElementById('fileList');
+    const fileListHint = document.querySelector('.file-list-hint');
+    const nInput = document.getElementById('n');
+    const resultDiv = document.getElementById('result');
+    const tokenLink = document.getElementById('tokenLink');
+    const copyBtn = document.getElementById('copyBtn');
+    const errorDiv = document.getElementById('error');
+    const errorMessage = document.getElementById('errorMessage');
+    const retryBtn = document.getElementById('retryBtn');
+    
+    // Favoriten-Array
+    let favorites: string[] = [];
+    
+    // Dateiliste aktualisieren
+    function updateFileList() {
+      const files = fileInput.files;
+      
+      if (files.length === 0) {
+        if (fileListHint) fileListHint.textContent = 'Keine Dateien ausgewählt';
+        return;
+      }
+      
+      if (fileListHint) fileListHint.remove();
+      
+      fileList.innerHTML = '';
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileId = `file-${i}`;
+        
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = fileId;
+        checkbox.dataset.filename = file.name;
+        
+        if (favorites.includes(file.name)) {
+          checkbox.checked = true;
+        }
+        
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            favorites.push(file.name);
+          } else {
+            favorites = favorites.filter(f => f !== file.name);
+          }
+        });
+        
+        const label = document.createElement('label');
+        label.htmlFor = fileId;
+        label.textContent = file.name;
+        
+        fileItem.appendChild(checkbox);
+        fileItem.appendChild(label);
+        fileList.appendChild(fileItem);
+      }
+      
+      // N automatisch setzen (z.B. auf die Hälfte der Bilder)
+      if (nInput && nInput.value === '') {
+        nInput.value = Math.max(1, Math.floor(files.length / 2));
+      }
+    }
+    
+    // Formular-Submit
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const password = (document.getElementById('password') as HTMLInputElement).value;
+      const files = fileInput.files;
+      
+      if (files.length === 0) {
+        showError('Bitte wählen Sie mindestens ein Bild aus');
+        return;
+      }
+      
+      const n = parseInt(nInput.value);
+      if (isNaN(n) || n < 1 || n >= files.length) {
+        showError(`N muss eine Zahl zwischen 1 und ${files.length - 1} sein`);
+        return;
+      }
+      
+      // FormData erstellen
+      const formData = new FormData();
+      formData.append('password', password);
+      formData.append('n', n.toString());
+      formData.append('favorites', JSON.stringify(favorites));
+      
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images', files[i]);
+      }
+      
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const result = await response.json();
+        
+        if (result.ok) {
+          showResult(result.token);
+        } else {
+          showError(result.error || 'Unbekannter Fehler');
+        }
+      } catch (err) {
+        showError('Netzwerkfehler: ' + (err as Error).message);
+      }
+    });
+    
+    // Ergebnis anzeigen
+    function showResult(token: string) {
+      form.classList.add('hidden');
+      errorDiv.classList.add('hidden');
+      resultDiv.classList.remove('hidden');
+      
+      const relativeLink = `/${token}`;
+      tokenLink.href = relativeLink;
+      tokenLink.textContent = relativeLink;
+    }
+    
+    // Fehler anzeigen
+    function showError(message: string) {
+      form.classList.add('hidden');
+      resultDiv.classList.add('hidden');
+      errorDiv.classList.remove('hidden');
+      errorMessage.textContent = message;
+    }
+    
+    // Kopieren-Funktion
+    copyBtn.addEventListener('click', () => {
+      const link = tokenLink.href;
+      navigator.clipboard.writeText(link).then(() => {
+        copyBtn.textContent = 'Kopiert!';
+        setTimeout(() => {
+          copyBtn.textContent = 'Kopieren';
+        }, 2000);
+      });
+    });
+    
+    // Erneut versuchen
+    retryBtn.addEventListener('click', () => {
+      errorDiv.classList.add('hidden');
+      form.classList.remove('hidden');
+      form.reset();
+      fileList.innerHTML = '<p class="file-list-hint">Keine Dateien ausgewählt</p>';
+      favorites = [];
+    });
+    
+    // Dateiauswahl-Change
+    fileInput.addEventListener('change', updateFileList);
+    
+    // Initialisieren
+    updateFileList();
+  </script>
+</body>
+</html>
