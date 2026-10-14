@@ -66,13 +66,13 @@ wurde durch das Auswahl-Modell ersetzt — der Kunde wählt aktiv N Bilder aus.
 - Barrierefreiheit: ✓/✗-Buttons als Alternative zur Geste, Pfeiltasten am Desktop, starker Kontrast, Zähler als aria-live.
 
 ## Offene Punkte
-1. **"Nichts passt":** Im Auswahl-Modell wählt der Kunde immer N Bilder; ein Abbruch ("gar nichts passt") ist nicht vorgesehen. Gewollt?
+1. ~~"Nichts passt"~~ — entschieden (2026-10-14): N ist Pflicht, kein Abbruch für den Kunden.
 2. ~~Wortlaut des Zählers~~ — erledigt (2026-10-14): Kunde "X von N ausgewählt", Fotograf "X von N" im Speichern-Button.
 3. ~~Tiefe von Zurück~~ — entschieden (2026-10-14): einstufig (letzte Aktion).
-4. **Aufbewahrungsfrist der Daten** — Cleanup ist gebaut (`SQUINT_RETENTION_MS`), Wert fehlt.
-5. **Match-Vermerk in der Mail**, oder nur Dateinamen?
+4. **Aufbewahrungsfrist:** Cleanup ist gebaut; Konfiguration soll in Tagen/Stunden lesbar sein (statt Millisekunden), Wert wird beim Deploy gesetzt. Umstellung offen (T12).
+5. ~~Match-Vermerk in der Mail~~ — entschieden (2026-10-14): nur die N Dateinamen.
 6. **Pinch-Zoom im MVP** (Augen prüfen bei Portraits)? Nicht umgesetzt.
 7. ~~Bildreihenfolge~~ — entschieden (2026-10-14): Upload-Reihenfolge.
 8. ~~Funktioniert `sharp` auf dem Infomaniak-Webhosting?~~ Beantwortet (2026-10-14): ja — Spike `scripts/sharp-spike.ts` lief auf dem Node.js-Hosting, libvips 8.18.7.
-9. **Upload-Flaschenhals:** Originale (z. B. 20 × 4 MB) wandern vollständig über den Fotograf-Uplink. Option: clientseitige Verkleinerung vor dem Upload (ca. Faktor 10 schneller), Server normalisiert trotzdem. Entscheidung offen.
+9. ~~Upload-Flaschenhals~~ — entschieden (2026-10-14): Client verkleinert vorab (ca. Faktor 10 schneller), Server normalisiert trotzdem — AUFLAGE: darf auf dem Handy keine spürbaren Performance-Probleme machen (sonst Server-only). Umsetzung offen (T11).
 10. **E2E deckt das Upload-Formular nicht ab:** Playwright testet die API, nicht den Formular-Flow (Auto-Upload, Progress, Grid, Favoriten-Speichern). Nachziehen?

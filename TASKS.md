@@ -89,7 +89,28 @@ Jedes Ticket: ein Worktree, ein Branch, Merge nach `dev` erst bei grünen Gates 
 - Staging (squint.silberblick.net) hinkt hinterher: Stand dort ist T0.
   Deploy-Konfiguration: siehe `DEPLOY.md` (git pull + Build-Kommando +
   Env-Variablen: Upload-Passwort, SMTP, Retention).
-- Offene Entscheidungen: siehe SPEC „Offene Punkte" (Nr. 1, 4, 5, 6, 9, 10).
+- Entscheidungen des Tages (SPEC „Offene Punkte"): N ist Pflicht (1),
+  Mail nur Dateinamen (5), Client-Verkleinerung vor Upload (9, Auflage:
+  keine Handy-Performance-Probleme), Retention in Tagen/Stunden (4).
+
+## T11 – Client-Verkleinerung vor dem Upload (entschieden 2026-10-14)
+- Browser verkleinert die Bilder vorab (lange Kante 1600 px, JPEG) und
+  sendet nur die verkleinerten Fassungen; Server prüft/normalisiert
+  weiter (sharp-Pipeline bleibt, akzeptiert beliebige JPEGs).
+- AUFLAGE von Daniel: keine spürbaren Performance-Probleme auf dem Handy —
+  auf älteren Geräten messen; falls problematisch: Fallback Server-only.
+- Berührt: `public/upload.html` (Resizing im Browser, Progress-Logik),
+  ggf. `src/upload.ts` (Akzeptanz vorverkleinerter Bilder, keine
+  Hochskalierung).
+- Mess-Kriterium: 20 Bilder à 4 MB auf Mittelklasse-Handy ohne Ruckler
+  und deutlich schnellerer Gesamt-Upload als Status quo.
+
+## T12 – Retention in Tagen (statt Millisekunden)
+- `SQUINT_RETENTION_MS` durch lesbares Format ersetzen, z. B.
+  `SQUINT_RETENTION_DAYS=30` (intern × 24 h). DEPLOY.md und AGENTS.md
+  mitziehen; Cleanup-Tests anpassen.
+- Berührt: `src/cleanup.ts`, `src/cleanup.test.ts`, `src/server.ts`,
+  `DEPLOY.md`.
 
 ## Reihenfolge
 T0 → (T1 ∥ T3) → (T2 ∥ T4) → (T5 ∥ T6 ∥ T7) → T8 → T9
