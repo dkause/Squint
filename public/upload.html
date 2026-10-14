@@ -58,6 +58,7 @@
           <div id="fileList" class="file-list">
             <p class="file-list-hint">Noch keine Bilder ausgewählt.</p>
           </div>
+          <button type="button" id="saveSelectionBtn" class="save-btn" hidden>Auswahl speichern</button>
         </li>
       </ol>
     </form>
@@ -92,14 +93,24 @@
     const errorDiv = document.getElementById('error');
     const errorMessage = document.getElementById('errorMessage');
     const retryBtn = document.getElementById('retryBtn');
+    const saveSelectionBtn = document.getElementById('saveSelectionBtn');
 
-    // 4. Auswahl: Liste der gewählten Bilder mit Favoriten-Haken
+    let favorites = [];
+    let objectUrls = [];
+
+    // 4. Auswahl: Preview-Grid der gewählten Bilder, Haken = Favorit
     fileInput.addEventListener('change', updateFileList);
 
     function updateFileList() {
       const files = fileInput.files;
 
+      for (const url of objectUrls) {
+        URL.revokeObjectURL(url);
+      }
+      objectUrls = [];
+      favorites = [];
       fileList.innerHTML = '';
+      saveSelectionBtn.hidden = true;
 
       if (files.length === 0) {
         fileList.innerHTML = '<p class="file-list-hint">Noch keine Bilder ausgewählt.</p>';
@@ -109,30 +120,45 @@
 
       const caption = document.createElement('p');
       caption.className = 'file-list-caption';
-      caption.textContent = files.length + ' Bilder. Haken = Favorit (optional, Match-Hinweis beim Kunden).';
+      caption.textContent = files.length + ' Bilder. Bild antippen = Favorit (optional, Match-Hinweis beim Kunden).';
       fileList.appendChild(caption);
+
+      const grid = document.createElement('div');
+      grid.className = 'preview-grid';
+      fileList.appendChild(grid);
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const fileId = 'file-' + i;
+        const url = URL.createObjectURL(file);
+        objectUrls.push(url);
 
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
+        const item = document.createElement('label');
+        item.className = 'preview-item';
+        item.title = file.name;
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.id = fileId;
         checkbox.dataset.filename = file.name;
-        checkbox.title = 'Favorit: ' + file.name;
+        checkbox.addEventListener('change', markSelectionDirty);
 
-        const label = document.createElement('label');
-        label.htmlFor = fileId;
-        label.textContent = file.name;
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = file.name;
+        img.loading = 'lazy';
 
-        fileItem.appendChild(checkbox);
-        fileItem.appendChild(label);
-        fileList.appendChild(fileItem);
+        const star = document.createElement('span');
+        star.className = 'preview-star';
+        star.setAttribute('aria-hidden', 'true');
+
+        item.appendChild(checkbox);
+        item.appendChild(img);
+        item.appendChild(star);
+        grid.appendChild(item);
       }
+
+      saveSelectionBtn.hidden = false;
+      markSelectionDirty();
 
       // N vorbelegen, falls leer (Hälfte der Bilder)
       if (nInput.value === '') {
@@ -141,6 +167,28 @@
 
       uploadBtn.disabled = false;
     }
+
+    function checkedFilenames() {
+      return Array.from(fileList.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(cb => cb.dataset.filename);
+    }
+
+    function markSelectionDirty() {
+      const count = checkedFilenames().length;
+      saveSelectionBtn.textContent = count > 0
+        ? 'Auswahl speichern (' + count + ')'
+        : 'Auswahl speichern';
+      saveSelectionBtn.classList.add('dirty');
+    }
+
+    // 4.1 Auswahl speichern (Zustand committen, mit dem Upload wird sie übertragen)
+    saveSelectionBtn.addEventListener('click', () => {
+      favorites = checkedFilenames();
+      saveSelectionBtn.classList.remove('dirty');
+      saveSelectionBtn.textContent = favorites.length > 0
+        ? favorites.length + ' Favoriten gespeichert'
+        : 'Keine Favoriten gespeichert';
+    });
 
     // 3.1 Hochladen: ein Vorgang — Passwort, N, Bilder, Favoriten, ein Submit
     form.addEventListener('submit', async (e) => {
@@ -159,9 +207,6 @@
         showError('N muss eine Zahl zwischen 1 und ' + (files.length - 1) + ' sein');
         return;
       }
-
-      const favorites = Array.from(fileList.querySelectorAll('input[type="checkbox"]:checked'))
-        .map(cb => cb.dataset.filename);
 
       const formData = new FormData();
       formData.append('password', password);

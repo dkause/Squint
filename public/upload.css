@@ -328,3 +328,74 @@ h1 {
   pointer-events: none;
   opacity: 0.5;
 }
+
+/* 4. Auswahl: Preview-Grid (3 Spalten) */
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-xs, 0.25rem);
+}
+
+.preview-item {
+  position: relative;
+  display: block;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.preview-item input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.preview-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #222;
+}
+
+.preview-item:focus-within {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.preview-item:has(input:checked) {
+  border-color: #f5c518;
+}
+
+.preview-star {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 1.2em;
+  height: 1.2em;
+  font-size: 1rem;
+  line-height: 1.2em;
+  text-align: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: transparent;
+}
+
+.preview-item:has(input:checked) .preview-star {
+  color: #f5c518;
+  content: "";
+}
+
+.preview-item:has(input:checked) .preview-star::before {
+  content: "★";
+}
+
+.save-btn {
+  margin-top: var(--spacing-sm, 0.5rem);
+}
+
+.save-btn.dirty {
+  outline: 2px solid #f5c518;
+}
