@@ -207,15 +207,17 @@ h1 {
 }
 
 .copy-btn {
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-black);
   color: var(--color-white);
   border: none;
   border-radius: var(--border-radius);
-  font-size: 0.875rem;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  align-self: center;
+  align-self: flex-start;
+  margin-top: var(--spacing-sm, 0.5rem);
 }
 
 .copy-btn:hover {
@@ -395,4 +397,29 @@ h1 {
 
 .preview-item:has(input:checked) .preview-star::before {
   content: "★";
+}
+
+/* Upload-Fortschritt */
+.upload-progress {
+  margin-top: var(--spacing-sm, 0.5rem);
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-light-gray, #ccc);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background-color: var(--color-black, #000);
+  transition: width 0.2s ease;
+}
+
+.progress-label {
+  margin: var(--spacing-xs, 0.25rem) 0 0;
+  font-size: 0.9rem;
 }

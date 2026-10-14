@@ -222,6 +222,34 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // Route: GET /:token/thumbs/:filename - serve grid thumbnail (400 px)
+    if (pathSegments.length === 3 && pathSegments[1] === 'thumbs') {
+      const filename = pathSegments[2] as string;
+
+      if (!FILENAME_PATTERN.test(filename)) {
+        res.writeHead(400);
+        res.end('Ungültiger Dateiname');
+        return;
+      }
+
+      try {
+        await readSet(token);
+        const thumbPath = join(dataDir, token, 'thumbs', filename);
+        const file = await readFile(thumbPath);
+        res.writeHead(200, { 'content-type': 'image/jpeg' });
+        res.end(file);
+      } catch (error) {
+        if (error instanceof SetNotFoundError || error instanceof InvalidTokenError) {
+          res.writeHead(404);
+          res.end('Set nicht gefunden');
+        } else {
+          res.writeHead(404);
+          res.end('Thumbnail nicht gefunden');
+        }
+      }
+      return;
+    }
+
     // Route: GET /:token/images/:filename - serve image file
     if (pathSegments.length === 3 && pathSegments[1] === 'images') {
       const filename = pathSegments[2] as string;

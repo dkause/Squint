@@ -48,6 +48,18 @@ async function processImage(buffer: Buffer): Promise<Buffer> {
   return processedBuffer;
 }
 
+async function processThumb(buffer: Buffer): Promise<Buffer> {
+  return sharp(buffer)
+    .resize({
+      width: 400,
+      height: 400,
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .jpeg({ quality: 80 })
+    .toBuffer();
+}
+
 export function isUploadPasswordValid(password: string): boolean {
   const uploadPassword = process.env.SQUINT_UPLOAD_PASSWORD;
   return uploadPassword !== undefined && password === uploadPassword;
@@ -136,6 +148,7 @@ export async function handleUpload(req: IncomingMessage): Promise<UploadResult> 
       originalname: string;
       sanitizedName: string;
       buffer: Buffer;
+      thumb: Buffer;
       favorite: boolean;
     }
     
@@ -151,8 +164,9 @@ export async function handleUpload(req: IncomingMessage): Promise<UploadResult> 
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       
-      // Bild verarbeiten
+      // Bild verarbeiten (Web-Fassung + Thumbnail fuer das Auswahl-Grid)
       const processedBuffer = await processImage(buffer);
+      const thumbBuffer = await processThumb(buffer);
       
       // Dateinamen sanitizen
       const sanitizedName = sanitizeFilename(file.name);
@@ -164,6 +178,7 @@ export async function handleUpload(req: IncomingMessage): Promise<UploadResult> 
         originalname: file.name,
         sanitizedName,
         buffer: processedBuffer,
+        thumb: thumbBuffer,
         favorite: isFavorite,
       });
     }
@@ -201,13 +216,15 @@ export async function handleUpload(req: IncomingMessage): Promise<UploadResult> 
     
     const token = await createSet(imagesForSet, n);
     
-    // 11. Bilder in das richtige Verzeichnis speichern
+    // 11. Bilder und Thumbnails in die richtigen Verzeichnisse speichern
     const tokenImagesDir = join(dataDir, token, 'images');
+    const tokenThumbsDir = join(dataDir, token, 'thumbs');
     await mkdir(tokenImagesDir, { recursive: true });
-    
+    await mkdir(tokenThumbsDir, { recursive: true });
+
     for (let i = 0; i < processedImages.length; i++) {
-      const filePath = join(tokenImagesDir, finalNames[i]!);
-      await writeFile(filePath, processedImages[i]!.buffer);
+      await writeFile(join(tokenImagesDir, finalNames[i]!), processedImages[i]!.buffer);
+      await writeFile(join(tokenThumbsDir, finalNames[i]!), processedImages[i]!.thumb);
     }
     
     return { ok: true, token };

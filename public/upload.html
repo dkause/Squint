@@ -50,26 +50,30 @@
               required
             >
           </div>
+          <div id="uploadProgress" class="upload-progress hidden">
+            <div class="progress-bar-track"><div id="progressBar" class="progress-bar"></div></div>
+            <p id="progressLabel" class="progress-label" aria-live="polite">Lädt hoch…</p>
+          </div>
         </li>
 
         <li class="step">
-          <span class="step-label">4. Auswahl (Favoriten):</span>
+          <span class="step-label">4. Auswahl (Favoriten) — erscheint nach dem Upload:</span>
           <div id="fileList" class="file-list">
-            <p class="file-list-hint">Noch keine Bilder ausgewählt.</p>
+            <p class="file-list-hint">Bilder auswählen, dann beginnen der Upload und die Auswahl.</p>
           </div>
-          <button type="submit" id="saveSelectionBtn" class="submit-btn" disabled>0 von N</button>
-        </li>
-
-        <li class="step">
-          <span class="step-label">5. Kunden-Link:</span>
-          <div class="token-link-container">
-            <a id="tokenLink" class="token-link disabled" aria-disabled="true">Link wird nach dem Upload erzeugt…</a>
-            <button id="copyBtn" class="copy-btn" disabled>Kopieren</button>
-          </div>
-          <p class="warning">⚠️ Link nur an den Kunden schicken!</p>
+          <button type="button" id="saveSelectionBtn" class="submit-btn" disabled hidden>0 von N</button>
         </li>
       </ol>
     </form>
+
+    <div class="step">
+      <span class="step-label">5. Kunden-Link:</span>
+      <p class="warning">Link nur an den Kunden schicken.</p>
+      <div class="token-link-container">
+        <a id="tokenLink" class="token-link disabled" aria-disabled="true">Link wird nach dem Upload erzeugt…</a>
+        <button id="copyBtn" class="copy-btn" disabled>Kopieren</button>
+      </div>
+    </div>
 
     <div id="error" class="error hidden">
       <h2>Fehler</h2>
@@ -84,80 +88,153 @@
     const fileInput = document.getElementById('images');
     const fileList = document.getElementById('fileList');
     const nInput = document.getElementById('n');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressBar = document.getElementById('progressBar');
+    const progressLabel = document.getElementById('progressLabel');
+    const saveSelectionBtn = document.getElementById('saveSelectionBtn');
     const tokenLink = document.getElementById('tokenLink');
     const copyBtn = document.getElementById('copyBtn');
     const errorDiv = document.getElementById('error');
     const errorMessage = document.getElementById('errorMessage');
     const retryBtn = document.getElementById('retryBtn');
-    const saveSelectionBtn = document.getElementById('saveSelectionBtn');
 
-    let favorites = [];
-    let objectUrls = [];
+    const TOKEN_KEY = 'squint:last-upload-token';
+    let token = sessionStorage.getItem(TOKEN_KEY) || null;
 
-    // 4. Auswahl: Preview-Grid der gewählten Bilder, Haken = Favorit
-    fileInput.addEventListener('change', updateFileList);
-    nInput.addEventListener('input', updateSelectionState);
-
-    function updateFileList() {
+    // 3. Dateiauswahl -> Upload startet automatisch (mit Fortschritt)
+    fileInput.addEventListener('change', () => {
       const files = fileInput.files;
 
-      for (const url of objectUrls) {
-        URL.revokeObjectURL(url);
-      }
-      objectUrls = [];
-      favorites = [];
-      fileList.innerHTML = '';
-
       if (files.length === 0) {
-        fileList.innerHTML = '<p class="file-list-hint">Noch keine Bilder ausgewählt.</p>';
         return;
       }
 
-      const caption = document.createElement('p');
-      caption.className = 'file-list-caption';
-      caption.textContent = files.length + ' Bilder. Bild antippen = Favorit (optional, Match-Hinweis beim Kunden).';
-      fileList.appendChild(caption);
-
-      const grid = document.createElement('div');
-      grid.className = 'preview-grid';
-      fileList.appendChild(grid);
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileId = 'file-' + i;
-        const url = URL.createObjectURL(file);
-        objectUrls.push(url);
-
-        const item = document.createElement('label');
-        item.className = 'preview-item';
-        item.title = file.name;
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.dataset.filename = file.name;
-        checkbox.addEventListener('change', updateSelectionState);
-
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = file.name;
-        img.loading = 'lazy';
-
-        const star = document.createElement('span');
-        star.className = 'preview-star';
-        star.setAttribute('aria-hidden', 'true');
-
-        item.appendChild(checkbox);
-        item.appendChild(img);
-        item.appendChild(star);
-        grid.appendChild(item);
+      const password = document.getElementById('password').value;
+      if (!password) {
+        showError('Bitte zuerst das Passwort (Schritt 1) eintragen.');
+        return;
       }
 
-      updateSelectionState();
+      const n = parseInt(nInput.value);
+      if (isNaN(n) || n < 1 || n >= files.length) {
+        showError('N muss eine Zahl zwischen 1 und ' + (files.length - 1) + ' sein');
+        return;
+      }
 
-      // N vorbelegen, falls leer (Hälfte der Bilder)
-      if (nInput.value === '') {
-        nInput.value = Math.max(1, Math.floor(files.length / 2));
+      startUpload(password, n, files);
+    });
+
+    function startUpload(password, n, files) {
+      errorDiv.classList.add('hidden');
+      uploadProgress.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      progressLabel.textContent = 'Lädt hoch… 0 %';
+      fileInput.disabled = true;
+
+      const formData = new FormData();
+      formData.append('password', password);
+      formData.append('n', n.toString());
+      formData.append('favorites', '[]');
+
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images', files[i]);
+      }
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/upload');
+
+      xhr.upload.addEventListener('progress', (ev) => {
+        if (ev.lengthComputable) {
+          const pct = Math.round((ev.loaded / ev.total) * 100);
+          progressBar.style.width = pct + '%';
+          progressLabel.textContent = 'Lädt hoch… ' + pct + ' %';
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        uploadProgress.classList.add('hidden');
+
+        let result = {};
+        try {
+          result = JSON.parse(xhr.responseText);
+        } catch { /* leere Antwort unten behandeln */ }
+
+        if (xhr.status === 200 && result.token) {
+          token = result.token;
+          sessionStorage.setItem(TOKEN_KEY, token);
+          loadSelection();
+        } else {
+          showError(result.error || 'Upload fehlgeschlagen (HTTP ' + xhr.status + ')');
+          fileInput.disabled = false;
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        uploadProgress.classList.add('hidden');
+        showError('Netzwerkfehler beim Upload');
+        fileInput.disabled = false;
+      });
+
+      xhr.send(formData);
+    }
+
+    // 4. Auswahl: Server-Thumbnails — ihr Erscheinen bestaetigt den Upload
+    async function loadSelection() {
+      if (!token) {
+        return;
+      }
+
+      fileList.innerHTML = '<p class="file-list-hint">Lade Bilder…</p>';
+
+      try {
+        const response = await fetch('/' + token + '/meta');
+        if (!response.ok) {
+          throw new Error('Meta nicht erreichbar');
+        }
+        const meta = await response.json();
+
+        fileList.innerHTML = '';
+
+        const caption = document.createElement('p');
+        caption.className = 'file-list-caption';
+        caption.textContent = meta.images.length + ' Bilder hochgeladen. Bild antippen = Favorit — genau N markieren, dann speichern.';
+        fileList.appendChild(caption);
+
+        const grid = document.createElement('div');
+        grid.className = 'preview-grid';
+        fileList.appendChild(grid);
+
+        for (let i = 0; i < meta.images.length; i++) {
+          const image = meta.images[i];
+
+          const item = document.createElement('label');
+          item.className = 'preview-item';
+          item.title = image.originalname;
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.dataset.filename = image.originalname;
+          checkbox.addEventListener('change', updateSelectionState);
+
+          const img = document.createElement('img');
+          img.src = '/' + token + '/thumbs/' + encodeURIComponent(image.filename);
+          img.alt = image.originalname;
+          img.loading = 'lazy';
+
+          const star = document.createElement('span');
+          star.className = 'preview-star';
+          star.setAttribute('aria-hidden', 'true');
+
+          item.appendChild(checkbox);
+          item.appendChild(img);
+          item.appendChild(star);
+          grid.appendChild(item);
+        }
+
+        saveSelectionBtn.hidden = false;
         updateSelectionState();
+      } catch (err) {
+        showError('Fehler beim Laden der Bilder: ' + err.message);
       }
     }
 
@@ -168,6 +245,10 @@
 
     // Zwei Button-States: inaktiv (grau) bis genau N Favoriten, dann aktiv (schwarz)
     function updateSelectionState() {
+      if (saveSelectionBtn.hidden) {
+        return;
+      }
+
       const n = parseInt(nInput.value);
 
       if (isNaN(n) || n < 1) {
@@ -181,56 +262,34 @@
       saveSelectionBtn.disabled = count !== n;
     }
 
-    // 4.1 Auswahl speichern = der eine Submit: Passwort, N, Bilder und die
-    // gespeicherte Auswahl gehen gemeinsam raus; danach wird der Link aktiv.
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    nInput.addEventListener('input', updateSelectionState);
 
+    // 4.1 Auswahl speichern: Favoriten an den Server, dann Link aktiv
+    saveSelectionBtn.addEventListener('click', async () => {
       const password = document.getElementById('password').value;
-      const files = fileInput.files;
-
-      if (files.length === 0) {
-        showError('Bitte mindestens ein Bild auswählen');
-        return;
-      }
-
-      const n = parseInt(nInput.value);
-      if (isNaN(n) || n < 1 || n >= files.length) {
-        showError('N muss eine Zahl zwischen 1 und ' + (files.length - 1) + ' sein');
-        return;
-      }
-
-      favorites = checkedFilenames();
-
-      const formData = new FormData();
-      formData.append('password', password);
-      formData.append('n', n.toString());
-      formData.append('favorites', JSON.stringify(favorites));
-
-      for (let i = 0; i < files.length; i++) {
-        formData.append('images', files[i]);
-      }
+      const favorites = checkedFilenames();
 
       saveSelectionBtn.disabled = true;
-      saveSelectionBtn.textContent = 'Speichern & Hochladen…';
+      saveSelectionBtn.textContent = 'Speichern…';
 
       try {
-        const response = await fetch('/upload', { method: 'POST', body: formData });
+        const response = await fetch('/' + token + '/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: password, favorites: favorites }),
+        });
         const result = await response.json();
 
-        if (result.token) {
-          errorDiv.classList.add('hidden');
+        if (result.ok) {
+          saveSelectionBtn.textContent = 'Favoriten gespeichert';
 
-          const link = location.origin + '/' + result.token;
+          const link = location.origin + '/' + token;
           tokenLink.href = link;
           tokenLink.textContent = link;
           tokenLink.classList.remove('disabled');
           tokenLink.classList.add('active');
           tokenLink.removeAttribute('aria-disabled');
           copyBtn.disabled = false;
-
-          saveSelectionBtn.disabled = false;
-          saveSelectionBtn.textContent = 'Favoriten gespeichert';
         } else {
           showError(result.error || 'Unbekannter Fehler');
           updateSelectionState();
@@ -240,6 +299,11 @@
         updateSelectionState();
       }
     });
+
+    // Nach Reload den letzten Upload wiederherstellen
+    if (token) {
+      loadSelection();
+    }
 
     // Fehler anzeigen
     function showError(message) {
@@ -259,13 +323,12 @@
     });
 
     // Erneut versuchen
-    updateSelectionState();
-
     retryBtn.addEventListener('click', () => {
       errorDiv.classList.add('hidden');
-      form.classList.remove('hidden');
-      form.reset();
-      updateFileList();
+      fileInput.disabled = false;
+      fileInput.value = '';
+      fileList.innerHTML = '<p class="file-list-hint">Bilder auswählen, dann beginnen der Upload und die Auswahl.</p>';
+      saveSelectionBtn.hidden = true;
     });
   </script>
 </body>
