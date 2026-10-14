@@ -52,6 +52,8 @@ no sharing/download. The authoritative list is in `SPEC.md`.
   mail address.
 - The running process may see a different filesystem than generic hosting
   SSH; verify write paths for `data/<token>/` at first deploy (T2 spike).
+- `sharp` runs on Infomaniak Node.js hosting — verified 2026-10-14 with
+  `scripts/sharp-spike.ts` (libvips 8.18.7, Linux prebuilt binaries).
 
 ## Goals
 

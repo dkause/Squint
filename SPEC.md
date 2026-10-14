@@ -71,4 +71,4 @@ Zustand: **Pool** (rotierende Reihenfolge), **fixiert** (Teilmenge des Pools), *
 5. Match-Vermerk in der Mail, oder nur Dateinamen?
 6. Pinch-Zoom im MVP (Augen prüfen bei Portraits)?
 7. Bildreihenfolge: Upload-Reihenfolge oder zufällig?
-8. Funktioniert `sharp` auf dem Infomaniak-Webhosting?
+8. ~~Funktioniert `sharp` auf dem Infomaniak-Webhosting?~~ Beantwortet (2026-10-14): ja — Spike `scripts/sharp-spike.ts` lief auf dem Node.js-Hosting, libvips 8.18.7. Offen bleibt: Schreibrechte für `data/<token>/` im Ausführungsbereich (prüfen in T2).
