@@ -13,6 +13,7 @@ import {
   type State,
   type Image as LogicImage
 } from '../src/logic.js';
+import { showFinishDialog, showLockedView, sendFinishRequest } from './finish.js';
 
 // ============================================================================
 // Typen
@@ -120,6 +121,7 @@ interface AppState {
   logicState: State | null;
   isLocked: boolean;
   isComplete: boolean;
+  finishDialogShown: boolean;
 }
 
 const appState: AppState = {
@@ -127,7 +129,8 @@ const appState: AppState = {
   meta: null,
   logicState: null,
   isLocked: false,
-  isComplete: false
+  isComplete: false,
+  finishDialogShown: false
 };
 
 // ============================================================================
@@ -411,10 +414,47 @@ function updateUI(): void {
     elements.cardImage.alt = '';
   }
   
-  // Show complete overlay if done
-  if (appState.isComplete) {
-    elements.completeOverlay.style.display = 'flex';
-    elements.completeOverlay.setAttribute('aria-hidden', 'false');
+  // Show finish dialog if done
+  if (appState.isComplete && !appState.isLocked) {
+    // Verstecke das complete Overlay
+    elements.completeOverlay.style.display = 'none';
+    elements.completeOverlay.setAttribute('aria-hidden', 'true');
+    
+    // Zeige den echten Abschlussdialog
+    if (!appState.finishDialogShown) {
+      appState.finishDialogShown = true;
+      const remainingImages = appState.logicState?.pool || [];
+      const fixatedImages = Array.from(appState.logicState?.fixated || []);
+      const allSelected = [...remainingImages, ...fixatedImages];
+      
+      // Hole die originalnames der ausgewählten Bilder
+      const selectedOriginalnames = allSelected
+        .map((filename) => {
+          const imageMeta = appState.meta?.images.find(img => img.filename === filename);
+          return imageMeta?.originalname || filename;
+        })
+        .filter((name): name is string => name !== undefined);
+      
+      showFinishDialog({
+        filenames: selectedOriginalnames,
+        onConfirm: async () => {
+          const success = await sendFinishRequest(appState.token, selectedOriginalnames);
+          if (success) {
+            showLockedView();
+            appState.isLocked = true;
+            appState.isComplete = false;
+            // Buttons deaktivieren
+            elements.dislikeBtn.disabled = true;
+            elements.likeBtn.disabled = true;
+            elements.undoBtn.disabled = true;
+          }
+          appState.finishDialogShown = false;
+        },
+        onBack: () => {
+          appState.finishDialogShown = false;
+        }
+      });
+    }
   } else {
     elements.completeOverlay.style.display = 'none';
     elements.completeOverlay.setAttribute('aria-hidden', 'true');
@@ -457,6 +497,14 @@ function convertToLogicImages(images: ImageMeta[]): LogicImage[] {
 }
 
 async function init(): Promise<void> {
+  // State zurücksetzen
+  appState.token = '';
+  appState.meta = null;
+  appState.logicState = null;
+  appState.isLocked = false;
+  appState.isComplete = false;
+  appState.finishDialogShown = false;
+
   // Token extrahieren
   appState.token = await extractToken();
   
