@@ -1,5 +1,5 @@
 /**
- * Kunden-UI: Swipe (T4)
+ * Kunden-UI: Swipe (T4 + T5)
  * Vanilla TypeScript, Pointer Events, kein Framework.
  */
 
@@ -10,9 +10,12 @@ import {
   undo,
   isComplete,
   getCurrentImageId,
+  fixate,
   type State,
   type Image as LogicImage
 } from '../src/logic.js';
+
+import { type MatchEvent } from './match.js';
 
 // ============================================================================
 // Typen
@@ -310,10 +313,10 @@ function handleSwipeRight(imageId: string): void {
     saveStateToLocalStorage(appState.token, appState.logicState);
     updateUI();
     
-    // Check for match (T5 will handle this properly)
+    // Check for match (T5: show feedback)
     if (result.value) {
-      console.log('Match detected for:', result.value.imageId);
-      // For T4, we just log it - T5 will add visual feedback
+      // Match-Event verarbeiten
+      handleMatchEvent(result.value);
     }
     
     // Animate card out to right
@@ -321,6 +324,84 @@ function handleSwipeRight(imageId: string): void {
   } else {
     showBlockedToast();
     animateCardSnapBack();
+  }
+}
+
+// ============================================================================
+// Match-Feedback Handler (T5)
+// ============================================================================
+
+let currentMatchEvent: MatchEvent | null = null;
+
+function handleMatchEvent(event: MatchEvent): void {
+  // Merke das aktuelle Match-Event
+  currentMatchEvent = event;
+  
+  // Vibration
+  navigator.vibrate?.(40);
+  
+  // Visuelles Feedback: gelber Rahmen und Stern
+  elements.card.classList.add('match-frame');
+  elements.matchIndicator.style.opacity = '1';
+  
+  // Popup mit Entscheidungsmöglichkeit
+  const popup = document.getElementById('match-popup');
+  if (!popup) return;
+  
+  const adoptBtn = document.getElementById('match-adopt-btn') as HTMLButtonElement;
+  const continueBtn = document.getElementById('match-continue-btn') as HTMLButtonElement;
+  
+  // Handler für diese spezifische Entscheidung
+  const handleAdopt = () => {
+    if (appState.logicState && currentMatchEvent) {
+      const fixateResult = fixate(appState.logicState, currentMatchEvent.imageId);
+      if (fixateResult.ok) {
+        appState.logicState = fixateResult.state;
+        saveStateToLocalStorage(appState.token, appState.logicState);
+        updateUI();
+      }
+    }
+    hideMatchPopup();
+    currentMatchEvent = null;
+    cleanupMatchButtonListeners();
+  };
+  
+  const handleContinue = () => {
+    // Bei "Weiter sichten" bleibt alles wie es ist
+    hideMatchPopup();
+    currentMatchEvent = null;
+    cleanupMatchButtonListeners();
+  };
+  
+  // Event-Listener registrieren
+  adoptBtn.addEventListener('click', handleAdopt);
+  continueBtn.addEventListener('click', handleContinue);
+  
+  // Popup anzeigen
+  popup.style.display = 'flex';
+  popup.setAttribute('aria-hidden', 'false');
+}
+
+function hideMatchPopup(): void {
+  const popup = document.getElementById('match-popup');
+  if (popup) {
+    popup.style.display = 'none';
+    popup.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function cleanupMatchButtonListeners(): void {
+  const adoptBtn = document.getElementById('match-adopt-btn') as HTMLButtonElement;
+  const continueBtn = document.getElementById('match-continue-btn') as HTMLButtonElement;
+  
+  // Klone der Buttons erstellen, um alte Listener zu entfernen
+  if (adoptBtn) {
+    const newAdoptBtn = adoptBtn.cloneNode(true) as HTMLButtonElement;
+    adoptBtn.parentNode?.replaceChild(newAdoptBtn, adoptBtn);
+  }
+  if (continueBtn) {
+    const newContinueBtn = continueBtn.cloneNode(true) as HTMLButtonElement;
+    continueBtn.parentNode?.replaceChild(newContinueBtn, continueBtn);
   }
 }
 
@@ -351,12 +432,14 @@ function animateCardOut(direction: 'left' | 'right'): void {
     elements.card.style.transform = '';
     elements.card.style.opacity = '';
     elements.card.style.transition = 'none';
+    elements.card.classList.remove('match-frame');
   }, 300);
 }
 
 function animateCardSnapBack(): void {
   elements.card.style.transform = '';
   elements.card.style.transition = 'transform 0.3s ease';
+  // Match-Frame bleibt bestehen, wenn das Bild gematcht ist
 }
 
 function showBlockedToast(): void {
@@ -402,13 +485,17 @@ function updateUI(): void {
       // Show match indicator if this is a matched favorite
       if (appState.logicState.matched.has(currentId)) {
         elements.matchIndicator.style.opacity = '1';
+        elements.card.classList.add('match-frame');
       } else {
         elements.matchIndicator.style.opacity = '0';
+        elements.card.classList.remove('match-frame');
       }
     }
   } else {
     elements.cardImage.src = '';
     elements.cardImage.alt = '';
+    elements.matchIndicator.style.opacity = '0';
+    elements.card.classList.remove('match-frame');
   }
   
   // Show complete overlay if done
