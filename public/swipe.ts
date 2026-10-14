@@ -10,7 +10,12 @@ import {
   undo,
   isComplete,
   getCurrentImageId,
+  createGridState,
+  toggleFade,
+  remainingImages,
+  isGridComplete,
   type State,
+  type GridState,
   type Image as LogicImage
 } from '../src/logic.js';
 import { showFinishDialog, showLockedView, sendFinishRequest } from './finish.js';
@@ -119,6 +124,8 @@ interface AppState {
   token: string;
   meta: SetMeta | null;
   logicState: State | null;
+  gridState: GridState | null;
+  isGridMode: boolean;
   isLocked: boolean;
   isComplete: boolean;
   finishDialogShown: boolean;
@@ -128,6 +135,8 @@ const appState: AppState = {
   token: '',
   meta: null,
   logicState: null,
+  gridState: null,
+  isGridMode: false,
   isLocked: false,
   isComplete: false,
   finishDialogShown: false
@@ -151,7 +160,10 @@ const elements = {
   undoBtn: document.getElementById('undo-btn') as HTMLButtonElement,
   dislikeBtn: document.getElementById('dislike-btn') as HTMLButtonElement,
   likeBtn: document.getElementById('like-btn') as HTMLButtonElement,
-  footer: document.querySelector('footer') as HTMLElement
+  footer: document.querySelector('footer') as HTMLElement,
+  gridContainer: document.getElementById('grid-container') as HTMLElement,
+  gridEl: document.getElementById('grid') as HTMLElement,
+  welcomeText: document.getElementById('welcome-text') as HTMLElement
 };
 
 // ============================================================================
@@ -504,6 +516,124 @@ function convertToLogicImages(images: ImageMeta[]): LogicImage[] {
   }));
 }
 
+// ============================================================================
+// Grid-Ansicht (Desktop): Klick blendet aus, was uebrig bleibt, ist die Auswahl
+// ============================================================================
+
+const GRID_KEY = 'squint:grid';
+
+function loadGridState(token: string, images: readonly string[], targetN: number): GridState {
+  const state = createGridState(images, targetN);
+  try {
+    const saved = localStorage.getItem(`${GRID_KEY}:${token}`);
+    if (saved) {
+      const faded: unknown = JSON.parse(saved);
+      if (Array.isArray(faded)) {
+        return { ...state, faded: new Set(faded.filter((f): f is string => typeof f === 'string')) };
+      }
+    }
+  } catch {
+    // kaputter Speicherstand: neuer State
+  }
+  return state;
+}
+
+function saveGridState(token: string, state: GridState): void {
+  localStorage.setItem(`${GRID_KEY}:${token}`, JSON.stringify([...state.faded]));
+}
+
+function renderGrid(): void {
+  if (!appState.gridState || !appState.meta) {
+    return;
+  }
+
+  const grid = appState.gridState;
+  elements.gridEl.innerHTML = '';
+
+  for (const image of appState.meta.images) {
+    const id = image.filename;
+
+    const item = document.createElement('div');
+    item.className = 'grid-item' + (grid.faded.has(id) ? ' faded' : '');
+    item.title = image.originalname;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.style.display = 'contents';
+    button.setAttribute('aria-label', image.originalname + (grid.faded.has(id) ? ' (ausgeblendet)' : ''));
+
+    const img = document.createElement('img');
+    img.src = `/${appState.token}/thumbs/${encodeURIComponent(image.filename)}`;
+    img.alt = image.originalname;
+    img.loading = 'lazy';
+
+    const mark = document.createElement('span');
+    mark.className = 'grid-fade-mark';
+    mark.setAttribute('aria-hidden', 'true');
+
+    button.appendChild(img);
+    button.appendChild(mark);
+    item.appendChild(button);
+    elements.gridEl.appendChild(item);
+
+    button.addEventListener('click', () => {
+      if (appState.isComplete) {
+        return;
+      }
+      appState.gridState = toggleFade(appState.gridState!, id);
+      saveGridState(appState.token, appState.gridState);
+      renderGrid();
+      updateGridCounter();
+
+      if (isGridComplete(appState.gridState)) {
+        completeGrid();
+      }
+    });
+  }
+}
+
+function updateGridCounter(): void {
+  if (!appState.gridState) {
+    return;
+  }
+  const remaining = remainingImages(appState.gridState).length;
+  elements.counter.textContent = `${remaining} übrig, Ziel ${appState.gridState.targetN}`;
+}
+
+function completeGrid(): void {
+  if (!appState.gridState || !appState.meta) {
+    return;
+  }
+  appState.isComplete = true;
+
+  const remaining = remainingImages(appState.gridState);
+  const selectedOriginalnames = remaining
+    .map((filename) => appState.meta?.images.find(img => img.filename === filename))
+    .map(meta => meta?.originalname || '')
+    .filter((name): name is string => name !== '');
+
+  if (!appState.finishDialogShown) {
+    appState.finishDialogShown = true;
+    showFinishDialog({
+      filenames: selectedOriginalnames,
+      onConfirm: async () => {
+        const success = await sendFinishRequest(appState.token, selectedOriginalnames);
+        if (success) {
+          showLockedView();
+          appState.isLocked = true;
+          appState.isComplete = false;
+        }
+        appState.finishDialogShown = false;
+      },
+      onBack: () => {
+        // Zurueck: Auswahl laeuft weiter (z. B. ausgeblendete Bilder wieder einblenden)
+        appState.isComplete = false;
+        appState.finishDialogShown = false;
+      }
+    });
+  }
+}
+
 async function init(): Promise<void> {
   // State zurücksetzen
   appState.token = '';
@@ -539,6 +669,36 @@ async function init(): Promise<void> {
     elements.lockedOverlay.setAttribute('aria-hidden', 'false');
     elements.cardContainer.style.display = 'none';
     elements.footer.style.display = 'none';
+    elements.gridContainer.classList.add('hidden');
+    return;
+  }
+
+  // Modus: Desktop mit Maus bekommt das Grid, alles andere die Swipe-Karte
+  appState.isGridMode = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  if (appState.isGridMode) {
+    elements.cardContainer.style.display = 'none';
+    elements.footer.style.display = 'none';
+    elements.undoBtn.style.display = 'none';
+    elements.gridContainer.classList.remove('hidden');
+    elements.welcomeText.textContent = 'Klicke ein Bild an, um es auszublenden — die übrig bleibenden sind deine Auswahl.';
+
+    const ids = meta.images.map(img => img.filename);
+    const gridWasSaved = localStorage.getItem(`${GRID_KEY}:${appState.token}`) !== null;
+    appState.gridState = loadGridState(appState.token, ids, meta.n);
+    renderGrid();
+    updateGridCounter();
+
+    if (!gridWasSaved) {
+      elements.welcomeOverlay.style.display = 'flex';
+      elements.welcomeOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    registerEventListeners();
+
+    if (isGridComplete(appState.gridState)) {
+      completeGrid();
+    }
     return;
   }
   

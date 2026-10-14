@@ -5,6 +5,10 @@ import {
   select,
   undo,
   isComplete,
+  createGridState,
+  toggleFade,
+  remainingImages,
+  isGridComplete,
   getCurrentImageId,
   type Result,
   type State,
@@ -224,5 +228,47 @@ describe('Auswahlmodell: next (links) und select (rechts)', () => {
       expect(isComplete(state)).toBe(true);
       expect(state.fixated).toEqual(new Set(['b', 'd']));
     });
+  });
+});
+
+describe('Grid-Ansicht (Desktop): invertierte Auswahl', () => {
+  it('startet mit allen Bildern, keines ausgeblendet', () => {
+    const state = createGridState(['a', 'b', 'c', 'd'], 2);
+    expect(remainingImages(state)).toEqual(['a', 'b', 'c', 'd']);
+    expect(isGridComplete(state)).toBe(false);
+  });
+
+  it('Klick blendet aus, erneuter Klick blendet wieder ein', () => {
+    let state = createGridState(['a', 'b', 'c', 'd'], 2);
+    state = toggleFade(state, 'a');
+    expect(remainingImages(state)).toEqual(['b', 'c', 'd']);
+    state = toggleFade(state, 'a');
+    expect(remainingImages(state)).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('Ende bei genau N uebrig — Ausgeblendete zaehlen nicht mit', () => {
+    let state = createGridState(['a', 'b', 'c', 'd'], 2);
+    state = toggleFade(state, 'a');
+    expect(isGridComplete(state)).toBe(false);
+    state = toggleFade(state, 'b');
+    expect(remainingImages(state)).toEqual(['c', 'd']);
+    expect(isGridComplete(state)).toBe(true);
+  });
+
+  it('weitere Ausblendung bei N uebrig fuehrt wieder vom Ende weg (Toggle frei)', () => {
+    let state = createGridState(['a', 'b', 'c', 'd'], 2);
+    state = toggleFade(state, 'a');
+    state = toggleFade(state, 'b');
+    expect(isGridComplete(state)).toBe(true);
+    state = toggleFade(state, 'c');
+    expect(remainingImages(state)).toEqual(['d']);
+    expect(isGridComplete(state)).toBe(false);
+  });
+
+  it('setzt die Auswahl aus den verbliebenen Bildern zusammen', () => {
+    let state = createGridState(['a', 'b', 'c', 'd'], 2);
+    state = toggleFade(state, 'a');
+    state = toggleFade(state, 'c');
+    expect(remainingImages(state)).toEqual(['b', 'd']);
   });
 });

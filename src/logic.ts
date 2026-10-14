@@ -215,3 +215,49 @@ export function undo(state: State): Result<void> {
 
   return { ok: true, state: newState };
 }
+
+// ============================================================================
+// Grid-Ansicht (Desktop): invertierte Auswahl durch Ausblenden.
+// Der Kunde blendet per Klick aus, was er nicht will — die uebrig
+// bleibenden Bilder sind die Auswahl. Ende, wenn genau N uebrig sind.
+// ============================================================================
+
+/** State der Grid-Ansicht. */
+export interface GridState {
+  /** Alle Bild-Ids in Anzeige-Reihenfolge. */
+  images: readonly string[];
+  /** Ausgeblendete Bild-Ids (Toggle per Klick). */
+  faded: ReadonlySet<string>;
+  /** Zielanzahl N. */
+  targetN: number;
+}
+
+/** Grid-State aus Bildliste und N erzeugen. */
+export function createGridState(images: readonly string[], targetN: number): GridState {
+  return {
+    images,
+    faded: new Set(),
+    targetN,
+  };
+}
+
+/** Klick: Bild ein- bzw. ausblenden (Toggle, rein). */
+export function toggleFade(state: GridState, imageId: string): GridState {
+  const faded = new Set(state.faded);
+  if (faded.has(imageId)) {
+    faded.delete(imageId);
+  } else {
+    faded.add(imageId);
+  }
+  return { ...state, faded };
+}
+
+/** Nicht ausgeblendete Bilder (die Auswahl). */
+export function remainingImages(state: GridState): readonly string[] {
+  return state.images.filter((id) => !state.faded.has(id));
+}
+
+/** Ende: genau N Bilder bleiben uebrig. */
+export function isGridComplete(state: GridState): boolean {
+  return remainingImages(state).length === state.targetN;
+}

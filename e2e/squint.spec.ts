@@ -364,3 +364,50 @@ test.describe('Squint E2E-Test: Vollständiger Flow', () => {
     console.log('Keine Bilder: PASSED');
   });
 });
+
+test.describe('Desktop: Grid mit invertierter Auswahl', () => {
+  test.use({ hasTouch: false, isMobile: false, viewport: { width: 1280, height: 800 } });
+
+  test('Klick blendet aus, N uebrig fuert zum Abschluss', async ({
+    request,
+    page,
+  }) => {
+    console.log('Test: Desktop-Grid (invertierte Auswahl)');
+
+    const imagePaths = [
+      join(process.cwd(), 'e2e', 'fixtures', 'test-image-1.jpg'),
+      join(process.cwd(), 'e2e', 'fixtures', 'test-image-2.jpg'),
+      join(process.cwd(), 'e2e', 'fixtures', 'test-image-3.jpg'),
+      join(process.cwd(), 'e2e', 'fixtures', 'test-image-4.jpg'),
+    ];
+
+    const uploadResult = await uploadImages(request, UPLOAD_PASSWORD, imagePaths, 2, []);
+    expect(uploadResult.ok).toBeTruthy();
+    const token = uploadResult.token;
+
+    await page.goto(`/${token}`);
+    await page.click('#close-welcome');
+
+    // Desktop: Grid statt Karte
+    await expect(page.locator('#grid-container')).toBeVisible();
+    await expect(page.locator('#card-container')).not.toBeVisible();
+
+    const items = page.locator('.grid-item');
+    await expect(items).toHaveCount(4);
+    await expect(page.locator('#counter')).toHaveText(/4 übrig, Ziel 2/);
+
+    // Klick blendet aus (invertierte Auswahl)
+    await items.nth(0).locator('button').click();
+    await expect(page.locator('.grid-item.faded')).toHaveCount(1);
+    await expect(page.locator('#counter')).toHaveText(/3 übrig, Ziel 2/);
+
+    await items.nth(1).locator('button').click();
+    await expect(page.locator('.grid-item.faded')).toHaveCount(2);
+    await expect(page.locator('#counter')).toHaveText(/2 übrig, Ziel 2/);
+
+    // Genau N uebrig -> Abschlussdialog
+    await expect(page.getByText('Diese 2 Bilder senden?')).toBeVisible({ timeout: 5000 });
+
+    console.log('Desktop-Grid: PASSED');
+  });
+});

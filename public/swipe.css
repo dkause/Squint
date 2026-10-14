@@ -383,3 +383,67 @@ button:focus:not(:focus-visible) {
     border: 1px solid #ccc;
   }
 }
+
+/* Grid-Ansicht (Desktop): invertierte Auswahl per Klick */
+.grid-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-sm, 0.5rem);
+}
+
+.grid-hint {
+  color: var(--color-fg-secondary, #999);
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-sm, 0.5rem);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-sm, 0.5rem);
+}
+
+.grid-item {
+  position: relative;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.grid-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #222;
+}
+
+.grid-item.faded {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.grid-item:focus-within {
+  outline: 2px solid var(--color-fg, #fff);
+  outline-offset: 2px;
+}
+
+.grid-item .grid-fade-mark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 1.4rem;
+  color: transparent;
+  pointer-events: none;
+}
+
+.grid-item.faded .grid-fade-mark {
+  color: var(--color-fg, #fff);
+}
+
+.grid-item.faded .grid-fade-mark::before {
+  content: "✕";
+}

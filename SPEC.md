@@ -20,6 +20,12 @@ Kein Login oder Konto für Kunden, keine Galerie oder Übersicht, kein Chat, kei
 5. Ergebnis ist ein geheimer Link, der aktiv wird, sobald die Auswahl gespeichert ist. Hinweis "Link nur an den Kunden schicken." direkt unter der Überschrift. Den verschickt der Fotograf selbst. Token in sessionStorage (Reload-sicher).
 
 ## Ablauf Kunde (Zustandsmaschine, Auswahl-Modell)
+
+Zwei Ansichten je Gerät (geändert 2026-10-14): **Mobil** (Touch) bekommt die
+Swipe-Karte mit positiver Auswahl, **Desktop** (Maus) bekommt ein Grid mit
+invertierter Auswahl — Klick blendet ein Bild aus, die übrig bleibenden sind
+die Auswahl; Ende, wenn genau N übrig sind.
+
 Zustand: **Pool** (rotierende Reihenfolge der noch nicht gewählten Bilder), **ausgewählt** (zählt auf N), **Verlauf** (für Zurück).
 
 Geändert 2026-10-14: Das Eliminierungs-Modell (links entfernen, rechts behalten)

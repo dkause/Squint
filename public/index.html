@@ -15,7 +15,7 @@
     <!-- Willkommens-Overlay -->
     <div id="welcome-overlay" class="overlay" aria-hidden="true">
       <div class="overlay-content">
-        <p>Wische nach rechts, um ein Bild auszuwählen, nach links für das nächste Bild.</p>
+        <p id="welcome-text">Wische nach rechts, um ein Bild auszuwählen, nach links für das nächste Bild.</p>
         <button id="close-welcome" class="btn" aria-label="Willkommen schließen">OK</button>
       </div>
     </div>
@@ -48,7 +48,7 @@
       <div class="spacer"></div>
     </header>
 
-    <!-- Karte -->
+    <!-- Karte (nur mobil: Swipe) -->
     <div id="card-container" class="card-container">
       <div id="card" class="card">
         <img id="card-image" class="card-image" alt="Auszuwählendes Bild" draggable="false">
@@ -58,7 +58,13 @@
       </div>
     </div>
 
-    <!-- Aktions-Buttons -->
+    <!-- Grid (Desktop): Klick blendet aus, was übrig bleibt, ist die Auswahl -->
+    <div id="grid-container" class="grid-container hidden">
+      <p class="grid-hint">Klick blendet ein Bild aus — die übrig bleibenden sind die Auswahl.</p>
+      <div id="grid" class="grid"></div>
+    </div>
+
+    <!-- Aktions-Buttons (nur mobil, zur Swipe-Karte) -->
     <footer class="footer">
       <button id="dislike-btn" class="btn-action" aria-label="Weiter">✗</button>
       <button id="like-btn" class="btn-action" aria-label="Auswählen">✓</button>
