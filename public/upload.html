@@ -50,7 +50,6 @@
               required
             >
           </div>
-          <button type="submit" id="uploadBtn" class="submit-btn" disabled>Hochladen</button>
         </li>
 
         <li class="step">
@@ -58,7 +57,7 @@
           <div id="fileList" class="file-list">
             <p class="file-list-hint">Noch keine Bilder ausgewählt.</p>
           </div>
-          <button type="button" id="saveSelectionBtn" class="submit-btn" disabled>0 von N</button>
+          <button type="submit" id="saveSelectionBtn" class="submit-btn" disabled>0 von N</button>
         </li>
 
         <li class="step">
@@ -83,7 +82,6 @@
     // DOM-Elemente
     const form = document.getElementById('uploadForm');
     const fileInput = document.getElementById('images');
-    const uploadBtn = document.getElementById('uploadBtn');
     const fileList = document.getElementById('fileList');
     const nInput = document.getElementById('n');
     const tokenLink = document.getElementById('tokenLink');
@@ -112,7 +110,6 @@
 
       if (files.length === 0) {
         fileList.innerHTML = '<p class="file-list-hint">Noch keine Bilder ausgewählt.</p>';
-        uploadBtn.disabled = true;
         return;
       }
 
@@ -162,8 +159,6 @@
         nInput.value = Math.max(1, Math.floor(files.length / 2));
         updateSelectionState();
       }
-
-      uploadBtn.disabled = false;
     }
 
     function checkedFilenames() {
@@ -186,14 +181,8 @@
       saveSelectionBtn.disabled = count !== n;
     }
 
-    // 4.1 Auswahl speichern: Bestätigung im gleichen Button-Design
-    saveSelectionBtn.addEventListener('click', () => {
-      favorites = checkedFilenames();
-      saveSelectionBtn.disabled = false;
-      saveSelectionBtn.textContent = 'Favoriten gespeichert';
-    });
-
-    // Hochladen: ein Vorgang — Passwort, N, Bilder, Favoriten, ein Submit
+    // 4.1 Auswahl speichern = der eine Submit: Passwort, N, Bilder und die
+    // gespeicherte Auswahl gehen gemeinsam raus; danach wird der Link aktiv.
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -211,6 +200,8 @@
         return;
       }
 
+      favorites = checkedFilenames();
+
       const formData = new FormData();
       formData.append('password', password);
       formData.append('n', n.toString());
@@ -220,8 +211,8 @@
         formData.append('images', files[i]);
       }
 
-      uploadBtn.disabled = true;
-      uploadBtn.textContent = 'Lädt hoch…';
+      saveSelectionBtn.disabled = true;
+      saveSelectionBtn.textContent = 'Speichern & Hochladen…';
 
       try {
         const response = await fetch('/upload', { method: 'POST', body: formData });
@@ -237,14 +228,16 @@
           tokenLink.classList.add('active');
           tokenLink.removeAttribute('aria-disabled');
           copyBtn.disabled = false;
+
+          saveSelectionBtn.disabled = false;
+          saveSelectionBtn.textContent = 'Favoriten gespeichert';
         } else {
           showError(result.error || 'Unbekannter Fehler');
+          updateSelectionState();
         }
       } catch (err) {
         showError('Netzwerkfehler: ' + err.message);
-      } finally {
-        uploadBtn.disabled = false;
-        uploadBtn.textContent = 'Hochladen';
+        updateSelectionState();
       }
     });
 
