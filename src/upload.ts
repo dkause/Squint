@@ -70,12 +70,13 @@ export async function handleUpload(req: IncomingMessage): Promise<UploadResult> 
     }
     
     // Request-Objekt für formData() erstellen
+    // duplex ist Teil von Undici, nicht der DOM-RequestInit-Typen
     const webRequest = new Request('http://localhost', {
       method: 'POST',
       headers,
       body: bodyStream,
-      duplex: 'half' as const,
-    });
+      duplex: 'half',
+    } as RequestInit);
     
     // FormData parsen
     const formData = await webRequest.formData();

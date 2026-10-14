@@ -4,11 +4,15 @@ import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readSet } from './storage.js';
 import { SetNotFoundError, InvalidTokenError, dataDir as storageDataDir } from './storage.js';
+import { handleUpload } from './upload.js';
 
 const port = Number(process.env.PORT ?? 8080);
 
 // Valid filename pattern for image serving
 const FILENAME_PATTERN = /^[a-zA-Z0-9._-]+$/;
+
+// Static client assets served from public/
+const PUBLIC_ASSETS = new Set(['/swipe.js', '/swipe.css']);
 
 // Get directory of this file
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -31,6 +35,50 @@ const server = createServer(async (req, res) => {
       } catch {
         res.writeHead(500);
         res.end('index.html nicht gefunden');
+      }
+      return;
+    }
+
+    // Route: GET /upload - photographer upload form
+    if (pathname === '/upload' && req.method === 'GET') {
+      try {
+        const htmlPath = resolve(__dirname, '../public/upload.html');
+        const html = await readFile(htmlPath, 'utf8');
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+        res.end(html);
+      } catch {
+        res.writeHead(500);
+        res.end('upload.html nicht gefunden');
+      }
+      return;
+    }
+
+    // Route: POST /upload - create set from multipart form
+    if (pathname === '/upload' && req.method === 'POST') {
+      const result = await handleUpload(req);
+      if (result.ok) {
+        res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ token: result.token }));
+      } else {
+        res.writeHead(400, { 'content-type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: result.error }));
+      }
+      return;
+    }
+
+    // Route: static client assets
+    if (PUBLIC_ASSETS.has(pathname)) {
+      try {
+        const assetPath = resolve(__dirname, '..', 'public', pathname.slice(1));
+        const asset = await readFile(assetPath);
+        const contentType = pathname.endsWith('.js')
+          ? 'text/javascript; charset=utf-8'
+          : 'text/css; charset=utf-8';
+        res.writeHead(200, { 'content-type': contentType });
+        res.end(asset);
+      } catch {
+        res.writeHead(404);
+        res.end('Asset nicht gefunden');
       }
       return;
     }
