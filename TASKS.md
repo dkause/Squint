@@ -65,6 +65,17 @@ Jedes Ticket: ein Worktree, ein Branch, Merge nach `dev` erst bei grünen Gates 
 - `npm run deploy` auf Infomaniak, Konfiguration über Umgebungsvariablen.
 - Nach T8.
 
+## T10 – Favoriten-Import (zurückgestellt, nach MVP)
+- Beim Upload Favoriten automatisch aus dem Fotografen-Workflow übernehmen:
+  Capture-One-Tags in den JPG-Metadaten (XMP: Rating/Farb-Tag/Keyword) oder
+  Dateinamen-Konvention. Checkbox-Liste im Upload-Formular erscheint vorangehakt
+  (überschreibbar).
+- VOR Umsetzung klären (mit Daniel): exakte C1-Konvention (Sterne? Farb-Tag?
+  Keyword? Dateinamen-Muster?) und Vorrang Metadatum vs. Dateiname.
+- Berührt: `src/upload.ts`, `public/upload.html`
+- Nicht Teil des MVP; SPEC-Nicht-Ziel „kein Capture-One-Plugin" bleibt
+  unberührt (Upload-Import ist kein Plugin).
+
 ## Reihenfolge
 T0 → (T1 ∥ T3) → (T2 ∥ T4) → (T5 ∥ T6 ∥ T7) → T8 → T9
 Manueller Check: nach T5 und T6 das Swipe-Gefühl auf einem echten Handy.
