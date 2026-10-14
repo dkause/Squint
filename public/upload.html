@@ -11,53 +11,64 @@
     <h1>Squint – Bilder hochladen</h1>
     
     <form id="uploadForm" class="upload-form">
-      <div class="form-group">
-        <label for="password">Passwort:</label>
-        <input 
-          type="password" 
-          id="password" 
-          name="password" 
-          required
-          autocomplete="off"
-        >
-      </div>
-      
-      <div class="form-group">
-        <label for="images">Bilder auswählen (mehrere):</label>
-        <input 
-          type="file" 
-          id="images" 
-          name="images" 
-          accept="image/*" 
-          multiple
-          required
-        >
-      </div>
-      
-      <div id="fileList" class="file-list">
-        <p class="file-list-hint">Keine Dateien ausgewählt</p>
-      </div>
-      
-      <div class="form-group">
-        <label for="n">Anzahl Bilder für Kundenauswahl (N):</label>
-        <input 
-          type="number" 
-          id="n" 
-          name="n" 
-          min="1"
-          required
-        >
-      </div>
-      
-      <button type="submit" class="submit-btn">Hochladen</button>
+      <ol class="steps">
+        <li class="step">
+          <div class="form-group">
+            <label for="password">1. Passwort:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              autocomplete="off"
+            >
+          </div>
+        </li>
+
+        <li class="step">
+          <div class="form-group">
+            <label for="n">2. Anzahl für die Kundenauswahl (N, kleiner als Bildanzahl):</label>
+            <input
+              type="number"
+              id="n"
+              name="n"
+              min="1"
+              required
+            >
+          </div>
+        </li>
+
+        <li class="step">
+          <div class="form-group">
+            <label for="images">3. Bilder hochladen (mehrere):</label>
+            <input
+              type="file"
+              id="images"
+              name="images"
+              accept="image/*"
+              multiple
+              required
+            >
+          </div>
+        </li>
+
+        <li class="step">
+          <span class="step-label">4. Auswahl (Favoriten, optional):</span>
+          <div id="fileList" class="file-list">
+            <p class="file-list-hint">Noch keine Bilder ausgewählt.</p>
+          </div>
+        </li>
+      </ol>
+
+      <button type="submit" class="submit-btn">3.1 Hochladen</button>
     </form>
     
     <div id="result" class="result hidden">
-      <h2>Upload erfolgreich!</h2>
-      <p>Geheimer Link für den Kunden:</p>
+      <h2>5. Auswahl erfolgreich</h2>
+      <p>Geheimer Kunden-Link:</p>
       <div class="token-link-container">
-        <a id="tokenLink" href="" class="token-link"></a>
-        <button id="copyBtn" class="copy-btn">Kopieren</button>
+        <a id="tokenLink" class="token-link disabled" aria-disabled="true">Link wird erzeugt…</a>
+        <button id="copyBtn" class="copy-btn" disabled>Kopieren</button>
       </div>
       <p class="warning">⚠️ Link nur an den Kunden schicken!</p>
     </div>
@@ -98,7 +109,12 @@
       if (fileListHint) fileListHint.remove();
       
       fileList.innerHTML = '';
-      
+
+      const caption = document.createElement('p');
+      caption.className = 'file-list-caption';
+      caption.textContent = files.length + ' Bilder. Haken = Favorit (optional, Match-Hinweis beim Kunden).';
+      fileList.appendChild(caption);
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const fileId = `file-${i}`;
@@ -184,15 +200,18 @@
       }
     });
     
-    // Ergebnis anzeigen
+    // Ergebnis anzeigen: Link-Button aktivieren
     function showResult(token) {
       form.classList.add('hidden');
       errorDiv.classList.add('hidden');
       resultDiv.classList.remove('hidden');
-      
-      const relativeLink = `/${token}`;
-      tokenLink.href = relativeLink;
-      tokenLink.textContent = relativeLink;
+
+      const link = location.origin + '/' + token;
+      tokenLink.href = link;
+      tokenLink.textContent = link;
+      tokenLink.classList.remove('disabled');
+      tokenLink.removeAttribute('aria-disabled');
+      copyBtn.disabled = false;
     }
     
     // Fehler anzeigen

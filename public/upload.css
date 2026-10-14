@@ -299,3 +299,32 @@ h1 {
     font-size: 1rem;
   }
 }
+
+/* Nummerierter Workflow */
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  margin-bottom: var(--spacing-md, 1rem);
+}
+
+.step-label {
+  display: block;
+  margin-bottom: var(--spacing-xs, 0.25rem);
+  font-weight: 600;
+}
+
+.file-list-caption {
+  margin: 0 0 var(--spacing-xs, 0.25rem);
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Inaktiver Link-Button bis zum erfolgreichen Upload */
+.token-link.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
