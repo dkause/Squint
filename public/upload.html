@@ -58,20 +58,19 @@
           <div id="fileList" class="file-list">
             <p class="file-list-hint">Noch keine Bilder ausgewählt.</p>
           </div>
-          <button type="button" id="saveSelectionBtn" class="submit-btn" disabled hidden>0 von N</button>
+          <button type="button" id="saveSelectionBtn" class="submit-btn" disabled>0 von N</button>
+        </li>
+
+        <li class="step">
+          <span class="step-label">5. Kunden-Link:</span>
+          <div class="token-link-container">
+            <a id="tokenLink" class="token-link disabled" aria-disabled="true">Link wird nach dem Upload erzeugt…</a>
+            <button id="copyBtn" class="copy-btn" disabled>Kopieren</button>
+          </div>
+          <p class="warning">⚠️ Link nur an den Kunden schicken!</p>
         </li>
       </ol>
     </form>
-
-    <div id="result" class="result hidden">
-      <h2>5. Kunden-Link</h2>
-      <p>Geheimer Link für den Kunden:</p>
-      <div class="token-link-container">
-        <a id="tokenLink" class="token-link disabled" aria-disabled="true">Link wird erzeugt…</a>
-        <button id="copyBtn" class="copy-btn" disabled>Kopieren</button>
-      </div>
-      <p class="warning">⚠️ Link nur an den Kunden schicken!</p>
-    </div>
 
     <div id="error" class="error hidden">
       <h2>Fehler</h2>
@@ -87,7 +86,6 @@
     const uploadBtn = document.getElementById('uploadBtn');
     const fileList = document.getElementById('fileList');
     const nInput = document.getElementById('n');
-    const resultDiv = document.getElementById('result');
     const tokenLink = document.getElementById('tokenLink');
     const copyBtn = document.getElementById('copyBtn');
     const errorDiv = document.getElementById('error');
@@ -111,7 +109,6 @@
       objectUrls = [];
       favorites = [];
       fileList.innerHTML = '';
-      saveSelectionBtn.hidden = true;
 
       if (files.length === 0) {
         fileList.innerHTML = '<p class="file-list-hint">Noch keine Bilder ausgewählt.</p>';
@@ -158,7 +155,6 @@
         grid.appendChild(item);
       }
 
-      saveSelectionBtn.hidden = false;
       updateSelectionState();
 
       // N vorbelegen, falls leer (Hälfte der Bilder)
@@ -177,10 +173,6 @@
 
     // Zwei Button-States: inaktiv (grau) bis genau N Favoriten, dann aktiv (schwarz)
     function updateSelectionState() {
-      if (saveSelectionBtn.hidden) {
-        return;
-      }
-
       const n = parseInt(nInput.value);
 
       if (isNaN(n) || n < 1) {
@@ -236,14 +228,13 @@
         const result = await response.json();
 
         if (result.token) {
-          form.classList.add('hidden');
           errorDiv.classList.add('hidden');
-          resultDiv.classList.remove('hidden');
 
           const link = location.origin + '/' + result.token;
           tokenLink.href = link;
           tokenLink.textContent = link;
           tokenLink.classList.remove('disabled');
+          tokenLink.classList.add('active');
           tokenLink.removeAttribute('aria-disabled');
           copyBtn.disabled = false;
         } else {
@@ -259,7 +250,6 @@
 
     // Fehler anzeigen
     function showError(message) {
-      resultDiv.classList.add('hidden');
       errorDiv.classList.remove('hidden');
       errorMessage.textContent = message;
     }
@@ -276,6 +266,8 @@
     });
 
     // Erneut versuchen
+    updateSelectionState();
+
     retryBtn.addEventListener('click', () => {
       errorDiv.classList.add('hidden');
       form.classList.remove('hidden');
