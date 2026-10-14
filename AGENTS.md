@@ -71,7 +71,8 @@ no sharing/download. The authoritative list is in `SPEC.md`.
 - `README.md` — the full case study: problem, competitive/SWOT analysis, personas, LoFi→HiFi prototypes, moderated and remote usability testing, design system (Material Design 3 base, IBM Plex), Figma delivery. Treat it as content, not as a config index.
 - `BusinessRequirementDoc.md` — BRD: target audience (B2B high-volume portrait photographers), competition, risks, scope (PWA + product website + blog), functional requirements (link-only login, proofing views, timeboxing, metadata sync, payment).
 - `SPEC.md` — MVP spec: scope, state machine, data model, non-goals. Authoritative for implementation decisions.
-- `TASKS.md` — ticket breakdown T0–T9 with merge order and green gates.
+- `TASKS.md` — tickets (T-numbers) and build status: the single place for open work. New tickets go here, not into separate files.
+- `BUGS.md` — bug records (B-numbers) with fixed fields (state, repro, expected, observed). File bugs here; fixed entries stay with their commit hash. Bugs violate SPEC/design-system/expected behavior; mere wishes are tickets in `TASKS.md`.
 - `src/` — server code (TypeScript). `src/img/` holds the case-study images referenced by README and BRD.
 - `public/` — client code (vanilla TS, native CSS).
 - `src/img/` — all images referenced by README and BRD: contact sheet, personas, prototypes, heatmaps, design-system sheets, app screens, logo.
