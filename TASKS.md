@@ -112,6 +112,22 @@ Jedes Ticket: ein Worktree, ein Branch, Merge nach `dev` erst bei grünen Gates 
 - Berührt: `src/cleanup.ts`, `src/cleanup.test.ts`, `src/server.ts`,
   `DEPLOY.md`.
 
+## T13 – E2E für das Upload-Formular
+- Playwright-Test des Formular-Flows: Dateiauswahl → Auto-Upload mit
+  Progress → Server-Thumb-Grid → Favoriten „X von N" → Link aktiv.
+- Berührt: `e2e/squint.spec.ts`
+- Hintergrund: SPEC „Offene Punkte" Nr. 10 (Suite testet bisher nur die API).
+
+## T14 – Pinch-Zoom für die Kartenansicht (offen bewertet)
+- Augen bei Portraits prüfen — SPEC „Offene Punkte" Nr. 6.
+- Berührt: `public/swipe.ts`, `public/swipe.css`
+
+## T15 – Live-Deploy squint.silberblick.net
+- Stand dorthin bringen: git pull, Build-Kommando setzen
+  (`git pull && npm install && npm run build:client`), Env-Variablen
+  (Upload-Passwort, SMTP, Retention), Neustart.
+- Anleitung: `DEPLOY.md`.
+
 ## Reihenfolge
 T0 → (T1 ∥ T3) → (T2 ∥ T4) → (T5 ∥ T6 ∥ T7) → T8 → T9
 Manueller Check: nach T5 und T6 das Swipe-Gefühl auf einem echten Handy.
