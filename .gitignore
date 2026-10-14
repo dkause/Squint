@@ -3,3 +3,6 @@ data/
 dist/
 *.log
 .DS_Store
+
+# Build-Artefakte
+public/swipe.js

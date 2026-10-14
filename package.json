@@ -10,13 +10,15 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
+    "build:client": "esbuild public/swipe.ts --bundle --outfile=public/swipe.js --format=esm --target=es2022",
+    "dev": "npm run build:client -- --watch=infile & tsx watch src/server.ts",
+    "start": "npm run build:client && tsx src/server.ts",
     "deploy": "echo 'Deploy folgt in T9 (Infomaniak Node.js-Hosting, Konfiguration ueber Umgebungsvariablen)'"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
     "eslint": "^10.12.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
