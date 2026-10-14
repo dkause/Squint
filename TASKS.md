@@ -76,6 +76,21 @@ Jedes Ticket: ein Worktree, ein Branch, Merge nach `dev` erst bei grünen Gates 
 - Nicht Teil des MVP; SPEC-Nicht-Ziel „kein Capture-One-Plugin" bleibt
   unberührt (Upload-Import ist kein Plugin).
 
+## Stand 2026-10-14 (Ende Tag 1)
+- T0 bis T9 umgesetzt und gemerged (Worker: Devstral, Review/Integration: Dirigent).
+- MVP läuft lokal vollständig (Upload → Auswahl → Link → Kunde swippt → Mail/Lock).
+- Iterationen nach MVP-Aufbau (alle gemerged):
+  - Upload-Formular: Inline-JS-Bugfix (Passwort in URL), ein Vorgang mit
+    Element-States, Preview-Grid 3 Spalten, genau-N-Favoriten mit
+    Zwei-Button-States, Auto-Upload mit Progress, Server-Thumbnails (400 px)
+    als Upload-Bestätigung, sessionStorage-Token.
+  - Kunden-UI: Auswahl-Modell statt Eliminierung (links = weiter,
+    rechts = Auswahl; Match ohne Popup), Zähler "X von N ausgewählt".
+- Staging (squint.silberblick.net) hinkt hinterher: Stand dort ist T0.
+  Deploy-Konfiguration: siehe `DEPLOY.md` (git pull + Build-Kommando +
+  Env-Variablen: Upload-Passwort, SMTP, Retention).
+- Offene Entscheidungen: siehe SPEC „Offene Punkte" (Nr. 1, 4, 5, 6, 9, 10).
+
 ## Reihenfolge
 T0 → (T1 ∥ T3) → (T2 ∥ T4) → (T5 ∥ T6 ∥ T7) → T8 → T9
 Manueller Check: nach T5 und T6 das Swipe-Gefühl auf einem echten Handy.

@@ -12,11 +12,12 @@ Squint hilft Kunden, aus vielen ähnlich aussehenden Fotos (Portraits) schnell u
 ## Nicht-Ziele (MVP)
 Kein Login oder Konto für Kunden, keine Galerie oder Übersicht, kein Chat, keine Sterne-Bewertung, kein Payment, kein Capture-One-Plugin, kein Freitext des Kunden, keine Mehrmandantenfähigkeit, kein Teilen oder Download. Builder-Agenten bauen davon nichts ein, auch nicht "hilfreich".
 
-## Ablauf Fotograf
-1. Passwortseite, danach Upload-Formular.
-2. Bilder wählen (mehrere), Favoriten markieren (genau N, geändert 2026-10-14: vorher beliebig viele), N setzen (1 ≤ N < Anzahl Bilder).
-3. Server verkleinert jedes Bild (Webformat, lange Kante 1600 px, JPEG) und behält den Originaldateinamen.
-4. Ergebnis ist ein geheimer Link. Den verschickt der Fotograf selbst.
+## Ablauf Fotograf (geändert 2026-10-14: Auto-Upload, Server-Thumbnails, genau-N-Favoriten)
+1. Passwort und N eintragen (1 ≤ N < Anzahl Bilder).
+2. Bilder wählen (mehrere) — der Upload startet automatisch mit Fortschrittsanzeige (Prozent, XHR-Progress).
+3. Server verkleinert jedes Bild mit sharp in zwei Fassungen und behält den Originaldateinamen: Web (lange Kante 1600 px, JPEG) unter `images/`, Thumbnail (lange Kante 400 px) unter `thumbs/`.
+4. Das Auswahl-Grid (3 Spalten) rendert aus den Server-Thumbnails — sein Erscheinen bestätigt den erfolgreichen Upload. Favoriten: genau N antippen (Pflicht), "Auswahl speichern" sendet sie passwortgeschützt an `POST /:token/favorites`.
+5. Ergebnis ist ein geheimer Link, der aktiv wird, sobald die Auswahl gespeichert ist. Hinweis "Link nur an den Kunden schicken." direkt unter der Überschrift. Den verschickt der Fotograf selbst. Token in sessionStorage (Reload-sicher).
 
 ## Ablauf Kunde (Zustandsmaschine, Auswahl-Modell)
 Zustand: **Pool** (rotierende Reihenfolge der noch nicht gewählten Bilder), **ausgewählt** (zählt auf N), **Verlauf** (für Zurück).
@@ -44,7 +45,7 @@ wurde durch das Auswahl-Modell ersetzt — der Kunde wählt aktiv N Bilder aus.
 - Das Set wird **gelockt**: Der Link zeigt nur noch "Auswahl wurde gesendet". Wiederöffnen kann nur der Fotograf, manuell.
 
 ## Daten
-- Flatfile pro Set: `data/<token>/set.json` plus `data/<token>/images/`.
+- Flatfile pro Set: `data/<token>/set.json`, `data/<token>/images/` (1600 px) und `data/<token>/thumbs/` (400 px, Auswahl-Grid).
 - `set.json`: Erstelldatum, N, gelockt ja/nein, Bildliste (Datei, Originalname, Favorit), Auswahl nach Abschluss.
 - Der Zwischenstand der Kundensitzung liegt im Browser (localStorage), damit ein Reload oder App-Wechsel nichts verliert. Der Server erfährt nur das Endergebnis.
 - Die Favoriten stehen in den Daten, die der Browser lädt, und sind damit technisch einsehbar. Das ist akzeptiert.
@@ -65,11 +66,13 @@ wurde durch das Auswahl-Modell ersetzt — der Kunde wählt aktiv N Bilder aus.
 - Barrierefreiheit: ✓/✗-Buttons als Alternative zur Geste, Pfeiltasten am Desktop, starker Kontrast, Zähler als aria-live.
 
 ## Offene Punkte
-1. **"Nichts passt"** ist im Eliminationsverfahren nicht vorgesehen, der Kunde behält immer N Bilder. Gewollt?
-2. Wortlaut des Zählers.
-3. Tiefe von Zurück: nur die letzte Aktion oder mehrstufig?
-4. Aufbewahrungsfrist der Daten.
-5. Match-Vermerk in der Mail, oder nur Dateinamen?
-6. Pinch-Zoom im MVP (Augen prüfen bei Portraits)?
-7. Bildreihenfolge: Upload-Reihenfolge oder zufällig?
-8. ~~Funktioniert `sharp` auf dem Infomaniak-Webhosting?~~ Beantwortet (2026-10-14): ja — Spike `scripts/sharp-spike.ts` lief auf dem Node.js-Hosting, libvips 8.18.7. Offen bleibt: Schreibrechte für `data/<token>/` im Ausführungsbereich (prüfen in T2).
+1. **"Nichts passt":** Im Auswahl-Modell wählt der Kunde immer N Bilder; ein Abbruch ("gar nichts passt") ist nicht vorgesehen. Gewollt?
+2. ~~Wortlaut des Zählers~~ — erledigt (2026-10-14): Kunde "X von N ausgewählt", Fotograf "X von N" im Speichern-Button.
+3. ~~Tiefe von Zurück~~ — entschieden (2026-10-14): einstufig (letzte Aktion).
+4. **Aufbewahrungsfrist der Daten** — Cleanup ist gebaut (`SQUINT_RETENTION_MS`), Wert fehlt.
+5. **Match-Vermerk in der Mail**, oder nur Dateinamen?
+6. **Pinch-Zoom im MVP** (Augen prüfen bei Portraits)? Nicht umgesetzt.
+7. ~~Bildreihenfolge~~ — entschieden (2026-10-14): Upload-Reihenfolge.
+8. ~~Funktioniert `sharp` auf dem Infomaniak-Webhosting?~~ Beantwortet (2026-10-14): ja — Spike `scripts/sharp-spike.ts` lief auf dem Node.js-Hosting, libvips 8.18.7.
+9. **Upload-Flaschenhals:** Originale (z. B. 20 × 4 MB) wandern vollständig über den Fotograf-Uplink. Option: clientseitige Verkleinerung vor dem Upload (ca. Faktor 10 schneller), Server normalisiert trotzdem. Entscheidung offen.
+10. **E2E deckt das Upload-Formular nicht ab:** Playwright testet die API, nicht den Formular-Flow (Auto-Upload, Progress, Grid, Favoriten-Speichern). Nachziehen?
