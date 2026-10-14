@@ -15,7 +15,7 @@
     <!-- Willkommens-Overlay -->
     <div id="welcome-overlay" class="overlay" aria-hidden="true">
       <div class="overlay-content">
-        <p>Wische nach rechts, um zu behalten, nach links zum Wegwerfen.</p>
+        <p>Wische nach rechts, um ein Bild auszuwählen, nach links für das nächste Bild.</p>
         <button id="close-welcome" class="btn" aria-label="Willkommen schließen">OK</button>
       </div>
     </div>
@@ -24,18 +24,6 @@
     <div id="locked-overlay" class="overlay" aria-hidden="true">
       <div class="overlay-content">
         <p>Auswahl wurde gesendet.</p>
-      </div>
-    </div>
-
-    <!-- Match-Popup -->
-    <div id="match-popup" class="overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="match-popup-title">
-      <div class="overlay-content match-popup-content">
-        <h2 id="match-popup-title" class="match-popup-title">Match!</h2>
-        <p class="match-popup-text">Dieses Bild ist ein Favorit des Fotografen.</p>
-        <div class="match-popup-buttons">
-          <button id="match-adopt-btn" class="btn match-btn-adopt">Auswahl übernehmen</button>
-          <button id="match-continue-btn" class="btn match-btn-continue">Weiter sichten</button>
-        </div>
       </div>
     </div>
 
@@ -72,8 +60,8 @@
 
     <!-- Aktions-Buttons -->
     <footer class="footer">
-      <button id="dislike-btn" class="btn-action" aria-label="Wegwerfen">✗</button>
-      <button id="like-btn" class="btn-action" aria-label="Behalten">✓</button>
+      <button id="dislike-btn" class="btn-action" aria-label="Weiter">✗</button>
+      <button id="like-btn" class="btn-action" aria-label="Auswählen">✓</button>
     </footer>
   </main>
 

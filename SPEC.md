@@ -18,23 +18,24 @@ Kein Login oder Konto für Kunden, keine Galerie oder Übersicht, kein Chat, kei
 3. Server verkleinert jedes Bild (Webformat, lange Kante 1600 px, JPEG) und behält den Originaldateinamen.
 4. Ergebnis ist ein geheimer Link. Den verschickt der Fotograf selbst.
 
-## Ablauf Kunde (Zustandsmaschine)
-Zustand: **Pool** (rotierende Reihenfolge), **fixiert** (Teilmenge des Pools), **Verlauf** (für Zurück).
+## Ablauf Kunde (Zustandsmaschine, Auswahl-Modell)
+Zustand: **Pool** (rotierende Reihenfolge der noch nicht gewählten Bilder), **ausgewählt** (zählt auf N), **Verlauf** (für Zurück).
+
+Geändert 2026-10-14: Das Eliminierungs-Modell (links entfernen, rechts behalten)
+wurde durch das Auswahl-Modell ersetzt — der Kunde wählt aktiv N Bilder aus.
 
 - Start: Pool = alle Bilder in Upload-Reihenfolge. Ein Willkommens-Screen erklärt die Geste in einem Satz.
-- **Links:** Bild wird aus dem Pool entfernt. Blockiert (mit Hinweis), wenn |Pool| = N.
-- **Rechts:** Bild bleibt im Pool, weiter zum nächsten.
-- **Rotation:** Nach dem letzten Bild beginnt die nächste Runde mit dem verbliebenen Pool. Fixierte Bilder werden nicht mehr gezeigt.
-- **Ende:** |Pool| = N führt zum Abschlussdialog.
-- **Anzeige:** "X übrig, Ziel N" (Wortlaut offen).
-- **Zurück:** macht die letzte Aktion rückgängig (Swipe oder Fixieren).
+- **Links (weiter):** Bild bleibt im Pool, das nächste wird angezeigt.
+- **Rechts (Auswahl):** Das Bild wird ausgewählt — es zählt auf N und verschwindet aus der Rotation.
+- **Rotation:** Nach dem letzten Bild beginnt die nächste Runde mit dem verbliebenen Pool. Ausgewählte Bilder werden nicht mehr gezeigt.
+- **Ende:** N Bilder ausgewählt → Abschlussdialog.
+- **Anzeige:** "X von N ausgewählt".
+- **Zurück:** macht die letzte Aktion rückgängig (Weiter oder Auswahl; auch ein Match wird zurückgenommen).
 
 ### Match
-- Rechts-Swipe auf einen Favoriten, der noch nicht gematcht wurde: Vibration (wo verfügbar), gelber Rahmen und Stern oben rechts, Popup mit "Auswahl übernehmen" oder "Weiter sichten".
-- **Übernehmen:** Bild wird fixiert, bleibt im Pool, wird nicht mehr angezeigt und zählt auf N. Bei N=1 führt das sofort zum Abschlussdialog.
-- **Weiter sichten:** Popup schließt, das Bild bleibt im Pool, die Markierung bleibt in allen späteren Runden sichtbar.
-- Das Popup erscheint **einmal pro Bild**.
-- Links-Swipe auf einen Favoriten: kein Feedback.
+- Auswahl (Rechts) eines Favoriten, der noch nicht gematcht wurde: Vibration (wo verfügbar), gelber Rahmen und Stern oben rechts. Kein Entscheidungs-Popup — die Auswahl ist mit dem Swipe bereits erfolgt (entfiel mit dem Auswahl-Modell).
+- Das Match-Feedback erscheint **einmal pro Bild**.
+- Links (weiter) auf einen Favoriten: kein Feedback.
 - Ohne Vibration (z. B. iOS-Safari) trägt das visuelle Feedback allein.
 
 ### Abschluss

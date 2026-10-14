@@ -5,18 +5,15 @@
 
 import {
   createState,
-  swipeLeft,
-  swipeRight,
+  next,
+  select,
   undo,
   isComplete,
   getCurrentImageId,
-  fixate,
   type State,
   type Image as LogicImage
 } from '../src/logic.js';
 import { showFinishDialog, showLockedView, sendFinishRequest } from './finish.js';
-
-import { type MatchEvent } from './match.js';
 
 // ============================================================================
 // Typen
@@ -84,9 +81,9 @@ function deserializeState(serialized: SerializableState, images: readonly LogicI
     matched: new Set(serialized.matched),
     history: serialized.history.map(action => {
       if (action.index !== undefined) {
-        return { type: action.type as 'swipeLeft' | 'fixate', imageId: action.imageId, index: action.index };
+        return { type: action.type as 'select', imageId: action.imageId, index: action.index };
       }
-      return { type: action.type as 'swipeRight', imageId: action.imageId };
+      return { type: action.type as 'next', imageId: action.imageId };
     }),
     currentIndex: serialized.currentIndex
   };
@@ -269,11 +266,11 @@ function handlePointerUp(ev: PointerEvent): void {
   
   if (meetsThreshold) {
     if (dx > 0) {
-      // Right swipe
-      handleSwipeRight(currentId);
+      // Right swipe: Auswahl
+      handleSelect(currentId);
     } else {
-      // Left swipe
-      handleSwipeLeft(currentId);
+      // Left swipe: weiter
+      handleNext(currentId);
     }
   } else {
     // Snap back
@@ -288,40 +285,41 @@ function handlePointerUp(ev: PointerEvent): void {
 // Aktions-Handler
 // ============================================================================
 
-function handleSwipeLeft(imageId: string): void {
+function handleNext(imageId: string): void {
   if (!appState.logicState) return;
-  
-  const result = swipeLeft(appState.logicState, imageId);
-  
+
+  const result = next(appState.logicState, imageId);
+
   if (result.ok) {
     appState.logicState = result.state;
     saveStateToLocalStorage(appState.token, appState.logicState);
     updateUI();
-    
+
     // Animate card out to left
     animateCardOut('left');
   } else {
-    showBlockedToast();
     animateCardSnapBack();
   }
 }
 
-function handleSwipeRight(imageId: string): void {
+function handleSelect(imageId: string): void {
   if (!appState.logicState) return;
-  
-  const result = swipeRight(appState.logicState, imageId);
-  
+
+  const result = select(appState.logicState, imageId);
+
   if (result.ok) {
     appState.logicState = result.state;
     saveStateToLocalStorage(appState.token, appState.logicState);
-    updateUI();
-    
-    // Check for match (T5: show feedback)
+
+    // Match-Feedback: Auswahl auf einem Favoriten (Vibration + Stern + Rahmen)
     if (result.value) {
-      // Match-Event verarbeiten
-      handleMatchEvent(result.value);
+      navigator.vibrate?.(40);
+      elements.card.classList.add('match-frame');
+      elements.matchIndicator.style.opacity = '1';
     }
-    
+
+    updateUI();
+
     // Animate card out to right
     animateCardOut('right');
   } else {
@@ -331,84 +329,8 @@ function handleSwipeRight(imageId: string): void {
 }
 
 // ============================================================================
-// Match-Feedback Handler (T5)
+// Undo
 // ============================================================================
-
-let currentMatchEvent: MatchEvent | null = null;
-
-function handleMatchEvent(event: MatchEvent): void {
-  // Merke das aktuelle Match-Event
-  currentMatchEvent = event;
-  
-  // Vibration
-  navigator.vibrate?.(40);
-  
-  // Visuelles Feedback: gelber Rahmen und Stern
-  elements.card.classList.add('match-frame');
-  elements.matchIndicator.style.opacity = '1';
-  
-  // Popup mit Entscheidungsmöglichkeit
-  const popup = document.getElementById('match-popup');
-  if (!popup) return;
-  
-  const adoptBtn = document.getElementById('match-adopt-btn') as HTMLButtonElement;
-  const continueBtn = document.getElementById('match-continue-btn') as HTMLButtonElement;
-  
-  // Handler für diese spezifische Entscheidung
-  const handleAdopt = () => {
-    if (appState.logicState && currentMatchEvent) {
-      const fixateResult = fixate(appState.logicState, currentMatchEvent.imageId);
-      if (fixateResult.ok) {
-        appState.logicState = fixateResult.state;
-        saveStateToLocalStorage(appState.token, appState.logicState);
-        updateUI();
-      }
-    }
-    hideMatchPopup();
-    currentMatchEvent = null;
-    cleanupMatchButtonListeners();
-  };
-  
-  const handleContinue = () => {
-    // Bei "Weiter sichten" bleibt alles wie es ist
-    hideMatchPopup();
-    currentMatchEvent = null;
-    cleanupMatchButtonListeners();
-  };
-  
-  // Event-Listener registrieren
-  adoptBtn.addEventListener('click', handleAdopt);
-  continueBtn.addEventListener('click', handleContinue);
-  
-  // Popup anzeigen
-  popup.style.display = 'flex';
-  popup.setAttribute('aria-hidden', 'false');
-}
-
-function hideMatchPopup(): void {
-  const popup = document.getElementById('match-popup');
-  if (popup) {
-    popup.style.display = 'none';
-    popup.setAttribute('aria-hidden', 'true');
-  }
-}
-
-function cleanupMatchButtonListeners(): void {
-  const adoptBtn = document.getElementById('match-adopt-btn') as HTMLButtonElement;
-  const continueBtn = document.getElementById('match-continue-btn') as HTMLButtonElement;
-  
-  // Klone der Buttons erstellen, um alte Listener zu entfernen
-  if (adoptBtn) {
-    const newAdoptBtn = adoptBtn.cloneNode(true) as HTMLButtonElement;
-    adoptBtn.parentNode?.replaceChild(newAdoptBtn, adoptBtn);
-  }
-  if (continueBtn) {
-    const newContinueBtn = continueBtn.cloneNode(true) as HTMLButtonElement;
-    continueBtn.parentNode?.replaceChild(newContinueBtn, continueBtn);
-  }
-}
-
-
 
 function handleUndo(): void {
   if (!appState.logicState) return;
@@ -470,9 +392,9 @@ function updateUI(): void {
   appState.isComplete = isComplete(appState.logicState);
   
   // Update counter
-  const remaining = appState.logicState.pool.length;
+  const selected = appState.logicState.fixated.size;
   const target = appState.logicState.targetN;
-  elements.counter.textContent = `${remaining} übrig, Ziel ${target}`;
+  elements.counter.textContent = `${selected} von ${target} ausgewählt`;
   
   // Update undo button
   elements.undoBtn.disabled = appState.logicState.history.length === 0;
@@ -510,9 +432,8 @@ function updateUI(): void {
     // Zeige den echten Abschlussdialog
     if (!appState.finishDialogShown) {
       appState.finishDialogShown = true;
-      const remainingImages = appState.logicState?.pool || [];
       const fixatedImages = Array.from(appState.logicState?.fixated || []);
-      const allSelected = [...remainingImages, ...fixatedImages];
+      const allSelected = fixatedImages;
       
       // Hole die originalnames der ausgewählten Bilder
       const selectedOriginalnames = allSelected
@@ -679,14 +600,14 @@ function registerEventListeners(): void {
   elements.dislikeBtn.addEventListener('click', () => {
     const currentId = getCurrentImageId(appState.logicState!);
     if (currentId) {
-      handleSwipeLeft(currentId);
+      handleNext(currentId);
     }
   });
-  
+
   elements.likeBtn.addEventListener('click', () => {
     const currentId = getCurrentImageId(appState.logicState!);
     if (currentId) {
-      handleSwipeRight(currentId);
+      handleSelect(currentId);
     }
   });
   
@@ -703,10 +624,10 @@ function registerEventListeners(): void {
     
     switch (ev.key) {
       case 'ArrowLeft':
-        handleSwipeLeft(currentId);
+        handleNext(currentId);
         break;
       case 'ArrowRight':
-        handleSwipeRight(currentId);
+        handleSelect(currentId);
         break;
       case 'Backspace':
       case 'Delete':

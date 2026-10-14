@@ -146,7 +146,7 @@ test.describe('Squint E2E-Test: Vollständiger Flow', () => {
     // Counter sollte sichtbar sein
     const counter = page.locator('#counter');
     await expect(counter).toBeVisible();
-    await expect(counter).toHaveText(/3 übrig, Ziel 2/);
+    await expect(counter).toHaveText(/0 von 2 ausgewählt/);
     
     console.log('Upload und Link öffnen: PASSED');
   });
@@ -179,18 +179,18 @@ test.describe('Squint E2E-Test: Vollständiger Flow', () => {
     await page.click('#close-welcome');
     
     const counter = page.locator('#counter');
-    await expect(counter).toHaveText(/4 übrig, Ziel 2/);
-    
-    // Links-Swipe
+    await expect(counter).toHaveText(/0 von 2 ausgewählt/);
+
+    // Links (weiter): Bild bleibt im Pool, Zaehler unveraendert
     await page.click('#dislike-btn');
     await page.waitForTimeout(300);
-    await expect(counter).toHaveText(/3 übrig, Ziel 2/);
-    
-    // Rechts-Swipe
+    await expect(counter).toHaveText(/0 von 2 ausgewählt/);
+
+    // Rechts (Auswahl): Bild wird ausgewaehlt, Zaehler steigt
     await page.click('#like-btn');
     await page.waitForTimeout(300);
-    await expect(counter).toHaveText(/3 übrig, Ziel 2/);
-    
+    await expect(counter).toHaveText(/1 von 2 ausgewählt/);
+
     console.log('Swipe Links und Rechts: PASSED');
   });
 
@@ -241,19 +241,17 @@ test.describe('Squint E2E-Test: Vollständiger Flow', () => {
     expect(image1).toBeTruthy();
     expect(image1.favorite).toBe(true);
     
-    // Erster Rechts-Swipe auf Favorit - Match-Popup sollte erscheinen
+    // Auswahl des Favoriten: zaehlt und matcht (Stern/Rahmen, kein Popup mehr)
     await page.click('#like-btn');
-    
-    const matchPopup = page.locator('#match-popup');
-    
-    // Warten und prüfen, dass das Popup erscheint
-    await expect(matchPopup).toBeVisible({ timeout: 5000 });
-    
-    // "Weiter sichten" klicken
-    await page.click('#match-continue-btn');
-    await expect(matchPopup).not.toBeVisible();
-    
-    console.log('Match-Popup: PASSED');
+    await page.waitForTimeout(300);
+
+    const counter = page.locator('#counter');
+    await expect(counter).toHaveText(/1 von 2 ausgewählt/);
+
+    // Das Match-Popup existiert nicht mehr im Auswahl-Modell
+    await expect(page.locator('#match-popup')).toHaveCount(0);
+
+    console.log('Match bei Auswahl eines Favoriten: PASSED');
   });
 
   test('Finish: Lock und Mail', async ({ 

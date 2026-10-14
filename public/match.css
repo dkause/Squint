@@ -1,12 +1,8 @@
 /**
- * Match-Feedback Styles (T5)
- * Gelber Rahmen, Stern, Vibration (Fallback: visuelles Feedback), Popup
+ * Match-Feedback Styles (T5, Auswahl-Modell)
+ * Gelber Rahmen, Stern, Vibration (Fallback: visuelles Feedback)
  * Design: Material Design 3 Basis, IBM Plex, Gelb aus Design System
  */
-
-/* ============================================================================
-   Match-Feedback - Gelber Rahmen und Stern
-   ============================================================================ */
 
 /* Gelber Rahmen um die Karte bei Match */
 .card.match-frame {
@@ -46,119 +42,7 @@
   }
 }
 
-/* ============================================================================
-   Match-Popup
-   ============================================================================ */
-
-.match-popup-content {
-  background-color: var(--color-bg);
-  border: 2px solid var(--color-accent);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
-  max-width: 80%;
-  min-width: 280px;
-  text-align: center;
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-  animation: popupSlideIn 0.3s ease;
-}
-
-@keyframes popupSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.match-popup-title {
-  color: var(--color-accent);
-  font-family: var(--font-family);
-  font-size: 1.5rem;
-  margin-bottom: var(--spacing-sm);
-}
-
-.match-popup-text {
-  color: var(--color-fg-secondary);
-  font-family: var(--font-family);
-  font-size: 1rem;
-  margin-bottom: var(--spacing-md);
-}
-
-.match-popup-buttons {
-  display: flex;
-  gap: var(--spacing-md);
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.match-btn-adopt {
-  background-color: var(--color-accent);
-  color: var(--color-bg);
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-family: var(--font-family);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  font-weight: 600;
-}
-
-.match-btn-adopt:hover:not(:disabled) {
-  background-color: #ffcc00;
-  transform: translateY(-2px);
-}
-
-.match-btn-continue {
-  background-color: transparent;
-  color: var(--color-fg);
-  border: 2px solid var(--color-fg);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-family: var(--font-family);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
-}
-
-.match-btn-continue:hover:not(:disabled) {
-  background-color: var(--color-fg);
-  color: var(--color-bg);
-  border-color: var(--color-fg);
-  transform: translateY(-2px);
-}
-
-/* ============================================================================
-   Responsive Anpassungen für Match-Popup
-   ============================================================================ */
-
-@media (max-width: 400px) {
-  .match-popup-buttons {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-
-  .match-btn-adopt,
-  .match-btn-continue {
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-  }
-}
-
-@media (min-width: 600px) {
-  .match-popup-content {
-    max-width: 400px;
-  }
-}
-
-/* ============================================================================
-   Vibration-Fallback: Visuelles Feedback
-   ============================================================================ */
-
-/* Bei Match: kurze Animation der gesamten Karte */
+/* Vibration-Fallback: kurze Animation der Karte */
 @keyframes matchShake {
   0%, 100% {
     transform: translateX(0);
@@ -173,14 +57,4 @@
 
 .card.match-vibrate {
   animation: matchShake 0.1s ease 3;
-}
-
-/* ============================================================================
-   Accessibility
-   ============================================================================ */
-
-.match-btn-adopt:focus-visible,
-.match-btn-continue:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
 }

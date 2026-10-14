@@ -57,9 +57,9 @@ function deserializeState(serialized: SerializableState, images: readonly LogicI
     matched: new Set(serialized.matched),
     history: serialized.history.map(action => {
       if (action.index !== undefined) {
-        return { type: action.type as 'swipeLeft' | 'fixate', imageId: action.imageId, index: action.index };
+        return { type: action.type as 'select', imageId: action.imageId, index: action.index };
       }
-      return { type: action.type as 'swipeRight', imageId: action.imageId };
+      return { type: action.type as 'next', imageId: action.imageId };
     }),
     currentIndex: serialized.currentIndex
   };
@@ -95,9 +95,9 @@ function createManualState(
     matched: new Set(matched),
     history: history.map(h => {
       if (h.index !== undefined) {
-        return { type: h.type as 'swipeLeft' | 'fixate', imageId: h.imageId, index: h.index };
+        return { type: h.type as 'select', imageId: h.imageId, index: h.index };
       }
-      return { type: h.type as 'swipeRight', imageId: h.imageId };
+      return { type: h.type as 'next', imageId: h.imageId };
     }),
     targetN,
     currentIndex
