@@ -65,17 +65,6 @@ Jedes Ticket: ein Worktree, ein Branch, Merge nach `dev` erst bei grünen Gates 
 - `npm run deploy` auf Infomaniak, Konfiguration über Umgebungsvariablen.
 - Nach T8.
 
-## T10 – Favoriten-Import (zurückgestellt, nach MVP)
-- Beim Upload Favoriten automatisch aus dem Fotografen-Workflow übernehmen:
-  Capture-One-Tags in den JPG-Metadaten (XMP: Rating/Farb-Tag/Keyword) oder
-  Dateinamen-Konvention. Checkbox-Liste im Upload-Formular erscheint vorangehakt
-  (überschreibbar).
-- VOR Umsetzung klären (mit Daniel): exakte C1-Konvention (Sterne? Farb-Tag?
-  Keyword? Dateinamen-Muster?) und Vorrang Metadatum vs. Dateiname.
-- Berührt: `src/upload.ts`, `public/upload.html`
-- Nicht Teil des MVP; SPEC-Nicht-Ziel „kein Capture-One-Plugin" bleibt
-  unberührt (Upload-Import ist kein Plugin).
-
 ## Stand 2026-10-14 (Ende Tag 1)
 - T0 bis T9 umgesetzt und gemerged (Worker: Devstral, Review/Integration: Dirigent).
 - MVP läuft lokal vollständig (Upload → Auswahl → Link → Kunde swippt → Mail/Lock).
@@ -117,10 +106,6 @@ Jedes Ticket: ein Worktree, ein Branch, Merge nach `dev` erst bei grünen Gates 
   Progress → Server-Thumb-Grid → Favoriten „X von N" → Link aktiv.
 - Berührt: `e2e/squint.spec.ts`
 - Hintergrund: SPEC „Offene Punkte" Nr. 10 (Suite testet bisher nur die API).
-
-## T14 – Pinch-Zoom für die Kartenansicht (offen bewertet)
-- Augen bei Portraits prüfen — SPEC „Offene Punkte" Nr. 6.
-- Berührt: `public/swipe.ts`, `public/swipe.css`
 
 ## T15 – Live-Deploy squint.silberblick.net
 - Stand dorthin bringen: git pull, Build-Kommando setzen
