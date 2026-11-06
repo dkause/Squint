@@ -1,0 +1,180 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
+
+// Beispiel-Breadcrumb-Items
+const breadcrumbItems = [
+  { name: "Home", href: "/" },
+  { name: "Galerie", href: "/galerie" },
+  { name: "Portraits", href: "/galerie/portraits" },
+  { name: "Aktuelle Auswahl" },
+];
+---
+
+<Layout title="SQUINT - Photo Selection" breadcrumbItems={breadcrumbItems}>
+  <section class="hero">
+    <h1 class="hero__title">Willkommen bei SQUINT</h1>
+    <p class="hero__subtitle">
+      Wählen Sie Ihre Lieblingsfotos aus - einfach und schnell
+    </p>
+  </section>
+
+  <section class="demo-section">
+    <h2 class="demo-section__title">Breadcrumb Demo</h2>
+    
+    <div class="demo-card">
+      <h3 class="demo-card__title">Standard Breadcrumb</h3>
+      <Breadcrumb 
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Galerie", href: "/galerie" },
+          { name: "Portraits" },
+        ]} 
+      />
+    </div>
+
+    <div class="demo-card">
+      <h3 class="demo-card__title">Breadcrumb mit benutzerdefiniertem Separator</h3>
+      <Breadcrumb 
+        items={[
+          { name: "Start", href: "/" },
+          { name: "Kategorie", href: "/kategorie" },
+          { name: "Unterkategorie", href: "/kategorie/unter" },
+          { name: "Detail" },
+        ]} 
+        separator="→"
+      />
+    </div>
+
+    <div class="demo-card">
+      <h3 class="demo-card__title">Einfache Breadcrumb</h3>
+      <Breadcrumb 
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Aktuelle Seite" },
+        ]} 
+      />
+    </div>
+  </section>
+
+  <section class="usage-section">
+    <h2 class="usage-section__title">Verwendung</h2>
+    
+    <div class="code-block">
+      <pre><code class="language-astro">{`<!-- In Ihrer Astro-Komponente oder Seite -->
+<Breadcrumb 
+  items={[
+    { name: "Home", href: "/" },
+    { name: "Galerie", href: "/galerie" },
+    { name: "Aktuelle Seite" }  // Letztes Item hat keinen Link
+  ]} 
+  separator="/"  // Optional, Standard ist "/"
+/>`}</code></pre>
+    </div>
+
+    <p class="usage-section__text">
+      Die Breadcrumb-Komponente akzeptiert ein Array von Items mit <code>name</code> 
+      und optional <code>href</code>. Das letzte Item wird automatisch als aktuelle 
+      Seite markiert und erhält keinen Link.
+    </p>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .hero__title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .hero__subtitle {
+    font-size: 1.125rem;
+    color: rgba(0, 0, 0, 0.6);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .demo-section {
+    margin-bottom: 3rem;
+  }
+
+  .demo-section__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+  }
+
+  .demo-card {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e0e0e0;
+  }
+
+  .demo-card__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 1rem;
+  }
+
+  .usage-section__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 1.5rem;
+  }
+
+  .usage-section__text {
+    color: rgba(0, 0, 0, 0.6);
+    margin-top: 1rem;
+    line-height: 1.6;
+  }
+
+  .code-block {
+    background: #f5f5f5;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    overflow-x: auto;
+    border: 1px solid #e0e0e0;
+  }
+
+  .code-block pre {
+    margin: 0;
+  }
+
+  .code-block code {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 0.875rem;
+    color: #333;
+    background: transparent;
+    padding: 0;
+  }
+
+  @media (max-width: 600px) {
+    .hero__title {
+      font-size: 1.75rem;
+    }
+    
+    .hero__subtitle {
+      font-size: 1rem;
+    }
+    
+    .demo-section__title,
+    .usage-section__title {
+      font-size: 1.25rem;
+    }
+  }
+</style>
